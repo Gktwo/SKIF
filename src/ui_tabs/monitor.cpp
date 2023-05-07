@@ -684,21 +684,21 @@ SKIF_UI_Tab_DrawMonitor (void)
     ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextBase)
                             );
 
-  ImGui::TextWrapped      ("Use the below list to identify injected processes using the " ICON_FA_CIRCLE " status indicator to the left."
-                           " Note that while a lot of processes might have Special K injected in them, only those that are whitelisted"
-                           " and uses a render API will see Special K active. Remaning processes have it inert and can"
-                           " be ignored unless an issue is being experienced."
+  ImGui::TextWrapped      ("使用下面的列表，使用左侧的状态指示器来识别注入的进程"
+    u8" 请注意，虽然许多进程可能注入了Special K，但只有那些被白名单的进程才会被注入"
+    u8" 并使用渲染API将看到Special K激活"
+    u8" 其余的过程是无效的，可以忽略它，除非遇到问题."
   );
 
   SKIF_ImGui_Spacing      ( );
 
   ImGui::BeginGroup       ( );
 
-  if (ImGui::Checkbox ("Show remaining processes",  &_registry.bProcessIncludeAll))
+  if (ImGui::Checkbox (u8"显示剩余进程",  &_registry.bProcessIncludeAll))
     _registry.regKVProcessIncludeAll.putData        (_registry.bProcessIncludeAll);
 
-  SKIF_ImGui_SetHoverTip ("If this is enabled the below list will also include uninjected processes.\n"
-                          "This is indicated by the lack of a " ICON_FA_CIRCLE " icon under the Status column.");
+  SKIF_ImGui_SetHoverTip (u8"如果启用了此功能，下面的列表还将包括未注入的流程.\n"
+    u8" 状态列下缺少 " ICON_FA_CIRCLE " 图标表明了这一点");
   
   ImGui::EndGroup         ( );
 
@@ -707,16 +707,16 @@ SKIF_UI_Tab_DrawMonitor (void)
   ImGui::BeginGroup       ( );
   ImGui::TreePush         ( );
 
-  const char* RefreshInterval[] = { "Paused",   // 0 (never)
-                                    "Slow",     // 1 (5s)
-                                    "Normal",   // 2 (1s)
-                                    "High"      // 3 (0.5s; not implemented)
+  const char* RefreshInterval[] = { u8"暂停",   // 0 (never)
+                                    u8"慢速",     // 1 (5s)
+                                    u8"正常",   // 2 (1s)
+                                    u8"快速"      // 3 (0.5s; not implemented)
   };
   static const char* RefreshIntervalCurrent = RefreshInterval[_registry.iProcessRefreshInterval];
           
   ImGui::TextColored (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-      "Update speed:"
+      u8"更新的速度:"
   );
 
   ImGui::SameLine    ( );
@@ -765,7 +765,7 @@ SKIF_UI_Tab_DrawMonitor (void)
     ImGui::EndGroup         ( );
 
     SKIF_ImGui_SetHoverTip (
-      "Real-time updates are paused."
+      u8"暂停实时更新."
     );
   }
 
@@ -776,13 +776,13 @@ SKIF_UI_Tab_DrawMonitor (void)
 
   ImGui::TextColored      (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-                            "Toggle Service:"
+                            u8"切换服务:"
                             );
 
   SKIF_ImGui_Spacing      ( );
 
-  ImGui::TextWrapped      ("A forced stop of the service may sometime help in case of an issue,"
-                            " even if the service is not currently running.");
+  ImGui::TextWrapped      (u8"在出现问题时，强制停止服务有时可能会有所帮助,"
+    u8" 即使服务当前没有运行.");
 
   SKIF_ImGui_Spacing      ( );
 
@@ -813,14 +813,14 @@ SKIF_UI_Tab_DrawMonitor (void)
   if ( _inject.SKVer32 >= "21.08.12" )
 #endif
   {
-    if (ImGui::Checkbox ("Stop automatically", &_registry.bStopOnInjection))
+    if (ImGui::Checkbox (u8"自动停止", &_registry.bStopOnInjection))
       SKIF_putStopOnInjection (_registry.bStopOnInjection);
 
     ImGui::SameLine         ( );
 
     ImGui::TextColored      (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), ICON_FA_EXCLAMATION_CIRCLE);
-    SKIF_ImGui_SetHoverTip  ("This controls whether the configured auto-stop behavior (see Settings tab) should be used when the service is manually started.\n"
-                            "Note that having this unchecked does not disable the auto-stop behavior if a game is launched without the service already running.");
+    SKIF_ImGui_SetHoverTip  (u8"此选项控制在手动启动服务时是否应使用配置的自动停止行为(请参阅设置选项卡)。\n"
+      u8"请注意，如果游戏在没有服务已经运行的情况下启动，未选中此选项并不会禁用自动停止行为.");
 
     ImGui::SameLine         ( );
   }
@@ -843,7 +843,7 @@ SKIF_UI_Tab_DrawMonitor (void)
 
   ImGui::TextColored (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-      "Status:"
+     u8"状态:"
   );
 
   SKIF_ImGui_Spacing      ( );
@@ -854,7 +854,7 @@ SKIF_UI_Tab_DrawMonitor (void)
 
   ImGui::TextColored (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-      "Components:"
+    u8"组件:"
   );
 
   SKIF_ImGui_Spacing      ( );
@@ -1076,6 +1076,7 @@ SKIF_UI_Tab_DrawMonitor (void)
                           L"d3d9.dll",
                           L"dinput8.dll",
                           L"opengl32.dll"
+                          L"injection.dll"
                         };
 
                         for (auto& dll : localDLLs)
@@ -1517,7 +1518,7 @@ SKIF_UI_Tab_DrawMonitor (void)
   static ImVec4 colHLNormal = ImGui::GetStyleColorVec4 (ImGuiCol_Text),
                 colHLActive = ImGui::GetStyleColorVec4 (ImGuiCol_SKIF_TextCaption);
 
-  ImGui::TextColored ((bHLStatus) ? colHLActive : colHLNormal, "Status");
+  ImGui::TextColored ((bHLStatus) ? colHLActive : colHLNormal, u8"状态");
   SKIF_ImGui_SetMouseCursorHand ( );
   SKIF_ImGui_SetHoverTip ("Sort by injection status");
   if (ImGui::IsItemClicked ()) _ChangeSort (0);
@@ -1553,7 +1554,7 @@ SKIF_UI_Tab_DrawMonitor (void)
   ImGui::SameLine    ( );
   ImGui::ItemSize    (ImVec2 (275.0f * SKIF_ImGui_GlobalDPIScale - ImGui::GetCursorPos().x, ImGui::GetTextLineHeight()));
   ImGui::SameLine    ( );
-  ImGui::TextColored ((bHLName) ? colHLActive : colHLNormal, "Process Name");
+  ImGui::TextColored ((bHLName) ? colHLActive : colHLNormal, u8"进程名");
   SKIF_ImGui_SetHoverTip ("Sort by process name");
   SKIF_ImGui_SetMouseCursorHand ( );
   if (ImGui::IsItemClicked ()) _ChangeSort (4);
@@ -1577,11 +1578,11 @@ SKIF_UI_Tab_DrawMonitor (void)
                           );
 
   if (EventIndex == USHRT_MAX)
-    ImGui::Text ("Error occurred when trying to locate type index for events!");
+    ImGui::Text (u8"试图定位事件的类型索引时发生错误!");
   else if (processes.empty () && _registry.iProcessRefreshInterval == 0)
-    ImGui::Text ("Real-time updates are paused.");
+    ImGui::Text (u8"暂停实时更新.");
   else if (processes.empty ())
-    ImGui::Text ("Special K is currently not injected in any process.");
+    ImGui::Text (u8"Special K 目前没有在任何进程中注入.");
 
   // This will ensure that the new sort order is applied immediately and only sorted once
   if (! processes.empty ( ) && (processes[0].sortedBy != _registry.iProcessSort || processes[0].sortedAsc != _registry.bProcessSortAscending))
@@ -1707,7 +1708,7 @@ SKIF_UI_Tab_DrawMonitor (void)
     if (proc.details.length() > 73)
       SKIF_ImGui_SetHoverTip (proc.details);
     else if (proc.details == "<access denied>")
-      SKIF_ImGui_SetHoverTip("Injection status cannot be determined due to a lack of permissions");
+      SKIF_ImGui_SetHoverTip(u8"由于缺乏权限，无法确定注入状态");
 
     ImGui::PopID  ( );
   }
@@ -1725,32 +1726,32 @@ SKIF_UI_Tab_DrawMonitor (void)
 
   if (static_proc.pid != 0)
   {
-    ImGui::OpenPopup         ("SKIF Task Manager");
+    ImGui::OpenPopup         (u8"SKIF任务管理器");
 
     ImGui::SetNextWindowSize (ImVec2 (400.0f * SKIF_ImGui_GlobalDPIScale, 0.0f));
     ImGui::SetNextWindowPos  (ImGui::GetCurrentWindowRead()->Viewport->GetMainRect().GetCenter(), ImGuiCond_Always, ImVec2 (0.5f, 0.5f));
 
-    if (ImGui::BeginPopupModal ( "SKIF Task Manager", nullptr,
+    if (ImGui::BeginPopupModal ( u8"SKIF任务管理器", nullptr,
                                     ImGuiWindowFlags_NoResize |
                                     ImGuiWindowFlags_NoMove |
                                     ImGuiWindowFlags_AlwaysAutoResize )
         )
     {
 
-      ImGui::Text        ("Do you want to end");
+      ImGui::Text        (u8"你想结束吗");
       ImGui::SameLine    ( );
       ImGui::TextColored (ImColor::HSV (0.11F, 1.F, 1.F), SK_WideCharToUTF8 (static_proc.filename).c_str());
       ImGui::SameLine    ( );
       ImGui::Text        ("?");
       SKIF_ImGui_Spacing ( );
-      ImGui::TextWrapped ("If an open program is associated with this process, it will close and you will lose any unsaved data. "
-                          "If you end a system process, it might result in system instability. Are you sure you want to continue?");
+      ImGui::TextWrapped (u8"如果一个打开的程序与此进程相关联，它将关闭，您将丢失任何未保存的数据. "
+        u8"如果结束系统进程，可能会导致系统不稳定。你确定要继续吗?");
 
       SKIF_ImGui_Spacing ( );
 
       ImGui::SetCursorPos (ImGui::GetCursorPos() + ImVec2(170.0f, 0));
 
-      if (ImGui::Button ("End Process", ImVec2 (  100 * SKIF_ImGui_GlobalDPIScale,
+      if (ImGui::Button (u8"结束进程", ImVec2 (  100 * SKIF_ImGui_GlobalDPIScale,
                                                    25 * SKIF_ImGui_GlobalDPIScale )))
       {
         SK_TerminatePID (static_proc.pid, 0x0);
@@ -1763,7 +1764,7 @@ SKIF_UI_Tab_DrawMonitor (void)
       ImGui::Spacing  ( );
       ImGui::SameLine ( );
 
-      if (ImGui::Button ("Cancel", ImVec2 ( 100 * SKIF_ImGui_GlobalDPIScale,
+      if (ImGui::Button (u8"取消", ImVec2 ( 100 * SKIF_ImGui_GlobalDPIScale,
                                               25 * SKIF_ImGui_GlobalDPIScale )))
       {
         static_proc = standby_record_s{};

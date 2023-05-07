@@ -734,19 +734,19 @@ SKIF_InjectionContext::_GlobalInjectionCtl (void)
 
   // 32-bit/64-bit Services
   if (pid32 && bAckInj)
-    ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Success), "Waiting for game...");
+    ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Success), u8"正在等待游戏...");
   else if (pid32)
-    ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Success), "Running");
+    ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Success), u8"运行中");
   else
-    ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Warning), "Stopped");
+    ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Warning), u8"已停止");
 
 #ifdef _WIN64
   if (pid64 && bAckInj)
-    ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Success), "Waiting for game...");
+    ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Success), u8"正在等待游戏...");
   else if (pid64)
-    ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Success), "Running");
+    ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Success), u8"运行中");
   else
-    ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Warning), "Stopped");
+    ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Warning), u8"已停止");
 #else
   ImGui::NewLine  ();
 #endif
@@ -834,7 +834,7 @@ SKIF_InjectionContext::_GlobalInjectionCtl (void)
                         ImGuiButtonFlags_Disabled );
 
   if ( ! bCurrentState && _registry.bAllowBackgroundService)
-      SKIF_ImGui_SetHoverTip ("Service continues running after this app is closed");
+      SKIF_ImGui_SetHoverTip (u8"此应用关闭后服务继续运行");
     
   if (ImGui::IsItemClicked (ImGuiMouseButton_Right))
     ServiceMenu = PopupState::Open;
@@ -883,14 +883,14 @@ SKIF_InjectionContext::_GlobalInjectionCtl (void)
 #endif
     {
 
-      if (ImGui::Checkbox ("Stop automatically", &_registry.bStopOnInjection))
+      if (ImGui::Checkbox (u8"自动停止", &_registry.bStopOnInjection))
         SKIF_putStopOnInjection (_registry.bStopOnInjection);
 
       ImGui::SameLine        ( );
 
       ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), ICON_FA_EXCLAMATION_CIRCLE);
-      SKIF_ImGui_SetHoverTip ("This controls whether the configured auto-stop behavior (see Settings tab) should be used when the service is manually started.\n"
-                              "Note that having this unchecked does not disable the auto-stop behavior if a game is launched without the service already running.");
+      SKIF_ImGui_SetHoverTip (u8"此选项控制在手动启动服务时是否应使用配置的自动停止行为(请参阅设置选项卡).\n"
+        u8"请注意，如果游戏在没有服务已经运行的情况下启动，未选中此选项并不会禁用自动停止行为.");
     }
 
     else {
@@ -998,7 +998,7 @@ SKIF_InjectionContext::_StartAtLogonCtrl (void)
 
   static bool changes = false;
 
-  if (ImGui::Checkbox("Start with Windows", &bAutoStartSKIF))
+  if (ImGui::Checkbox(u8"从Windows开始", &bAutoStartSKIF))
     changes = true;
 
   if (! bAutoStartSKIF)
@@ -1068,8 +1068,8 @@ SKIF_InjectionContext::_StartAtLogonCtrl (void)
     ImGui::PopStyleVar ();
     ImGui::PopItemFlag ();
 
-    SKIF_ImGui_SetHoverTip ( "The current autostart method needs to be disabled to migrate over to this method.\n"
-                             "The difference is that this method autostarts SKIF, and not just the GI service." );
+    SKIF_ImGui_SetHoverTip ( u8"需要禁用当前的自动启动方法才能迁移到此方法.\n"
+      u8"不同之处在于该方法会自动启动SKIF，而不仅仅是GI服务." );
   }
 
   // Legacy method, only appear if it is actually enabled or debug mode is enabled
@@ -1094,7 +1094,7 @@ SKIF_InjectionContext::_StartAtLogonCtrl (void)
       ImGui::PushStyleVar (ImGuiStyleVar_Alpha, ImGui::GetStyle ().Alpha * 0.5f);
     }
   
-    if (ImGui::Checkbox ("Start the global injection service with Windows", &dontCare))
+    if (ImGui::Checkbox (u8"启动Windows的全局注入服务", &dontCare))
     {
       if (! bAutoStartServiceOnly)
       {

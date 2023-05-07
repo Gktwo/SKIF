@@ -2088,8 +2088,8 @@ SKIF_UI_Tab_DrawLibrary (void)
       //ImGui::NewLine          ();
       ImGui::TextUnformatted  ("Injection:");
       //ImGui::TextUnformatted  ("Injection DLL:");
-      ImGui::TextUnformatted  ("Config Root:");
-      ImGui::TextUnformatted  ("Config File:");
+      ImGui::TextUnformatted  (u8"配置根目录:");
+      ImGui::TextUnformatted  (u8"配置文件:");
       ImGui::PopStyleColor    ();
       ImGui::ItemSize         (ImVec2 (110.f * SKIF_ImGui_GlobalDPIScale,
                                          0.f)
@@ -3546,7 +3546,7 @@ Cache=false)";
 
       if ( ! _inject.bHasServlet )
       {
-        ImGui::TextColored    (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Warning), "Service is unavailable due to missing files.");
+        ImGui::TextColored    (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Warning), "由于缺少文件，服务不可用.");
       }
 
       else if ( ! pApp->launch_configs.empty() )
@@ -3554,7 +3554,7 @@ Cache=false)";
         bool elevate =
           pApp->launch_configs[0].isElevated (pApp->id);
 
-        if (ImGui::Checkbox ("Elevated service (beta)###ElevatedLaunch",   &elevate))
+        if (ImGui::Checkbox (u8"提升服务权限 (beta)###ElevatedLaunch",   &elevate))
           pApp->launch_configs[0].setElevated (pApp->id, elevate);
 
         ImGui::SameLine ( );
@@ -3676,7 +3676,7 @@ Cache=false)";
                                                       ImGuiWindowFlags_AlwaysUseWindowPadding |
                         ((pApp->textures.isCustomCover || _registry.iStyle == 2) ? 0x0 : ImGuiWindowFlags_NoBackground));
 
-    ImGui::TextColored        (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption) * ImVec4 (0.8f, 0.8f, 0.8f, 1.0f), "Special Kudos to our Patrons:");
+    ImGui::TextColored        (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption) * ImVec4 (0.8f, 0.8f, 0.8f, 1.0f), u8"特别表扬我们的赞助人:");
 
     std::string patrons_ = SKIF_GetPatrons ( );
 

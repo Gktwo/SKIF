@@ -440,7 +440,7 @@ SKIF_UI_Tab_DrawSettings (void)
 
 #pragma region Section: Top / General
   // SKIF Options
-  //if (ImGui::CollapsingHeader ("Frontend v " SKIF_VERSION_STR_A " (" __DATE__ ")###SKIF_SettingsHeader-1", ImGuiTreeNodeFlags_DefaultOpen))
+  //if (ImGui::CollapsingHeader (u8"Frontend v " SKIF_VERSION_STR_A " (u8" __DATE__ ")###SKIF_SettingsHeader-1", ImGuiTreeNodeFlags_DefaultOpen))
   //{
   ImGui::PushStyleColor   (
     ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextBase)
@@ -456,27 +456,27 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::SetColumnWidth (0, 510.0f * SKIF_ImGui_GlobalDPIScale) //SKIF_vecCurrentMode.x / 2.0f)
   );
           
-  if ( ImGui::Checkbox ( "Low bandwidth mode",                          &_registry.bLowBandwidthMode ) )
+  if ( ImGui::Checkbox ( u8"低带宽模式",                          &_registry.bLowBandwidthMode ) )
     _registry.regKVLowBandwidthMode.putData (                                      _registry.bLowBandwidthMode );
           
   ImGui::SameLine        ( );
   ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), ICON_FA_EXCLAMATION_CIRCLE);
   SKIF_ImGui_SetHoverTip (
-    "For new games/covers, low resolution images will be preferred over high-resolution ones.\n"
-    "This only affects new downloads of covers. It does not affect already downloaded covers.\n"
-    "This will also disable automatic downloads of new updates to Special K."
+    u8"对于新游戏/封面，低分辨率图像比高分辨率图像更受欢迎.\n"
+    u8"这只会影响到新下载的封面。它不会影响已经下载的封面.\n"
+    u8"这也将禁用新更新的自动下载 Special K."
   );
 
-  if ( ImGui::Checkbox ( "Prefer launching GOG games through Galaxy", &_registry.bPreferGOGGalaxyLaunch) )
+  if ( ImGui::Checkbox (u8"更喜欢通过Galaxy启动GOG游戏", &_registry.bPreferGOGGalaxyLaunch) )
     _registry.regKVPreferGOGGalaxyLaunch.putData (_registry.bPreferGOGGalaxyLaunch);
 
-  if ( ImGui::Checkbox ( "Remember the last selected game",         &_registry.bRememberLastSelected ) )
+  if ( ImGui::Checkbox (u8"记住上次选择的游戏",         &_registry.bRememberLastSelected ) )
     _registry.regKVRememberLastSelected.putData (                    _registry.bRememberLastSelected );
             
-  if ( ImGui::Checkbox ( "Minimize when launching a game",             &_registry.bMinimizeOnGameLaunch ) )
+  if ( ImGui::Checkbox (u8"在启动游戏时最小化",             &_registry.bMinimizeOnGameLaunch ) )
     _registry.regKVMinimizeOnGameLaunch.putData (                                      _registry.bMinimizeOnGameLaunch );
             
-  if ( ImGui::Checkbox ( "Close to the notification area", &_registry.bCloseToTray ) )
+  if ( ImGui::Checkbox (u8"靠近通知区域", &_registry.bCloseToTray ) )
     _registry.regKVCloseToTray.putData (                                               _registry.bCloseToTray );
 
   _inject._StartAtLogonCtrl ( );
@@ -490,41 +490,41 @@ SKIF_UI_Tab_DrawSettings (void)
   ImGui::BeginGroup    ( );
             
   ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), ICON_FA_EXCLAMATION_CIRCLE);
-  SKIF_ImGui_SetHoverTip ("This determines how long the service will remain running when launching a game.\n"
-                          "Move the mouse over each option to get more information");
+  SKIF_ImGui_SetHoverTip (u8"这决定了在启动游戏时服务将持续运行多长时间.\n"
+    u8"将鼠标移到每个选项上以获取更多信息");
   ImGui::SameLine        ( );
   ImGui::TextColored (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-      "Auto-stop behavior when launching a game:"
+    u8"启动游戏时的自动停止行为:"
   );
   ImGui::TreePush        ("_registry.iAutoStopBehavior");
 
-  //if (ImGui::RadioButton ("Never",           &_registry.iAutoStopBehavior, 0))
+  //if (ImGui::RadioButton (u8"Never",           &_registry.iAutoStopBehavior, 0))
   //  regKVAutoStopBehavior.putData (           _registry.iAutoStopBehavior);
   // 
   //ImGui::SameLine        ( );
 
-  if (ImGui::RadioButton ("Stop on injection",    &_registry.iAutoStopBehavior, 1))
+  if (ImGui::RadioButton (u8"停止注射",    &_registry.iAutoStopBehavior, 1))
     _registry.regKVAutoStopBehavior.putData (             _registry.iAutoStopBehavior);
 
-  SKIF_ImGui_SetHoverTip ("The service will be stopped when Special K successfully injects into a game.");
+  SKIF_ImGui_SetHoverTip (u8"当 Special K成功注入游戏时，服务将停止.");
 
   ImGui::SameLine        ( );
-  if (ImGui::RadioButton ("Stop on game exit",      &_registry.iAutoStopBehavior, 2))
+  if (ImGui::RadioButton (u8"游戏退出时停止",      &_registry.iAutoStopBehavior, 2))
     _registry.regKVAutoStopBehavior.putData (             _registry.iAutoStopBehavior);
 
-  SKIF_ImGui_SetHoverTip ("The service will be stopped when Special K detects that the game is being closed.");
+  SKIF_ImGui_SetHoverTip (u8"当Special K检测到游戏被关闭时，服务将被停止.");
 
   ImGui::TreePop         ( );
 
   ImGui::Spacing         ( );
 
   ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), ICON_FA_EXCLAMATION_CIRCLE);
-  SKIF_ImGui_SetHoverTip ("This setting has no effect if low bandwidth mode is enabled.");
+  SKIF_ImGui_SetHoverTip (u8"启用低带宽模式后，此设置无效.");
   ImGui::SameLine        ( );
   ImGui::TextColored (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-      "Check for updates to Special K:"
+    u8"检查 Special K的更新:"
   );
 
   if (_registry.bLowBandwidthMode)
@@ -536,14 +536,14 @@ SKIF_UI_Tab_DrawSettings (void)
 
   ImGui::BeginGroup    ( );
 
-  ImGui::TreePush        ("_registry.iCheckForUpdates");
-  if (ImGui::RadioButton ("Never",                 &_registry.iCheckForUpdates, 0))
+  ImGui::TreePush        (u8"_registry.iCheckForUpdates");
+  if (ImGui::RadioButton (u8"从不",                 &_registry.iCheckForUpdates, 0))
     _registry.regKVCheckForUpdates.putData (                  _registry.iCheckForUpdates);
   ImGui::SameLine        ( );
-  if (ImGui::RadioButton ("Weekly",                &_registry.iCheckForUpdates, 1))
+  if (ImGui::RadioButton (u8"每周",                &_registry.iCheckForUpdates, 1))
     _registry.regKVCheckForUpdates.putData (                  _registry.iCheckForUpdates);
   ImGui::SameLine        ( );
-  if (ImGui::RadioButton ("On each launch",        &_registry.iCheckForUpdates, 2))
+  if (ImGui::RadioButton (u8"每次启动时",        &_registry.iCheckForUpdates, 2))
     _registry.regKVCheckForUpdates.putData (                  _registry.iCheckForUpdates);
   ImGui::TreePop         ( );
 
@@ -614,7 +614,7 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::TreePush      ("Push_UpdateChannel");
     ImGui::BeginGroup    ( );
     ImGui::TextColored   (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Warning),
-                          "A restart is required to populate the update channels.");
+      u8"需要重新启动才能填充更新通道.");
     ImGui::EndGroup      ( );
     ImGui::TreePop       ( );
   }
@@ -628,20 +628,20 @@ SKIF_UI_Tab_DrawSettings (void)
   ImGui::Spacing       ( );
             
   ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), ICON_FA_EXCLAMATION_CIRCLE);
-  SKIF_ImGui_SetHoverTip ("This provides contextual notifications in Windows when the service starts or stops.");
+  SKIF_ImGui_SetHoverTip (u8"当服务启动或停止时，在Windows中提供上下文通知.");
   ImGui::SameLine        ( );
   ImGui::TextColored (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-      "Show Windows notifications:"
+    u8"显示Windows通知:"
   );
   ImGui::TreePush        ("_registry.iNotifications");
-  if (ImGui::RadioButton ("Never",          &_registry.iNotifications, 0))
+  if (ImGui::RadioButton (u8"从不",          &_registry.iNotifications, 0))
     _registry.regKVNotifications.putData (             _registry.iNotifications);
   ImGui::SameLine        ( );
-  if (ImGui::RadioButton ("Always",         &_registry.iNotifications, 1))
+  if (ImGui::RadioButton (u8"每周",         &_registry.iNotifications, 1))
     _registry.regKVNotifications.putData (             _registry.iNotifications);
   ImGui::SameLine        ( );
-  if (ImGui::RadioButton ("When unfocused", &_registry.iNotifications, 2))
+  if (ImGui::RadioButton (u8"当未聚焦", &_registry.iNotifications, 2))
     _registry.regKVNotifications.putData (             _registry.iNotifications);
   ImGui::TreePop         ( );
 
@@ -649,9 +649,9 @@ SKIF_UI_Tab_DrawSettings (void)
             
   ImGui::TextColored (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-      "Hide games from select platforms:"
+    u8"从选定的平台隐藏游戏:"
   );
-  ImGui::TreePush      ("");
+  ImGui::TreePush      (u8"");
 
   if (ImGui::Checkbox        ("Epic", &_registry.bDisableEGSLibrary))
   {
@@ -702,7 +702,7 @@ SKIF_UI_Tab_DrawSettings (void)
 #pragma endregion
 
 #pragma region Section: Appearances
-  if (ImGui::CollapsingHeader ("Appearance###SKIF_SettingsHeader-1"))
+  if (ImGui::CollapsingHeader (u8"外观###SKIF_SettingsHeader-1"))
   {
     ImGui::PushStyleColor   (
       ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextBase)
@@ -721,11 +721,11 @@ SKIF_UI_Tab_DrawSettings (void)
     extern bool RecreateSwapChains;
 
     ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), ICON_FA_EXCLAMATION_CIRCLE);
-    SKIF_ImGui_SetHoverTip ("Increases the color depth of the app.");
+    SKIF_ImGui_SetHoverTip (u8"增加应用的颜色深度.");
     ImGui::SameLine        ( );
     ImGui::TextColored (
       ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-        "Color depth:"
+      u8"颜色深度:"
     );
     
     static int placeholder = 0;
@@ -776,11 +776,11 @@ SKIF_UI_Tab_DrawSettings (void)
     if (SKIF_Util_IsHDRSupported ( ))
     {
       ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), ICON_FA_EXCLAMATION_CIRCLE);
-      SKIF_ImGui_SetHoverTip ("Makes the app pop more on HDR displays.");
+      SKIF_ImGui_SetHoverTip (u8"使应用程序在HDR显示器上更弹出.");
       ImGui::SameLine        ( );
       ImGui::TextColored (
         ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-          "High Dynamic Range:"
+          u8"高动态范围:"
       );
       ImGui::TreePush        ("iHDRMode");
       if (ImGui::RadioButton ("No",             &_registry.iHDRMode, 0))
@@ -810,7 +810,7 @@ SKIF_UI_Tab_DrawSettings (void)
         ImGui::PushStyleVar (ImGuiStyleVar_Alpha, ImGui::GetStyle ().Alpha * 0.5f);
       }
 
-      if (ImGui::SliderInt("HDR brightness", &_registry.iHDRBrightness, 100, 400, "%d nits"))
+      if (ImGui::SliderInt(u8"HDR亮度", &_registry.iHDRBrightness, 100, 400, "%d nits"))
         _registry.regKVHDRBrightness.putData (_registry.iHDRBrightness);
 
       if (_registry.iHDRMode == 0)
@@ -825,31 +825,31 @@ SKIF_UI_Tab_DrawSettings (void)
     }
 
     ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), ICON_FA_EXCLAMATION_CIRCLE);
-    SKIF_ImGui_SetHoverTip ("Useful if you find bright white covers an annoyance.");
+    SKIF_ImGui_SetHoverTip (u8"如果你发现明亮的白色覆盖了一个烦恼.");
     ImGui::SameLine        ( );
     ImGui::TextColored (
       ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-        "Dim game covers by 25%%:"
+        u8"暗淡的游戏封面 25%%:"
     );
     ImGui::TreePush        ("iDimCovers");
-    if (ImGui::RadioButton ("Never",                 &_registry.iDimCovers, 0))
+    if (ImGui::RadioButton (u8"从不",                 &_registry.iDimCovers, 0))
       _registry.regKVDimCovers.putData (                        _registry.iDimCovers);
     ImGui::SameLine        ( );
-    if (ImGui::RadioButton ("Always",                &_registry.iDimCovers, 1))
+    if (ImGui::RadioButton (u8"经常",                &_registry.iDimCovers, 1))
       _registry.regKVDimCovers.putData (                        _registry.iDimCovers);
     ImGui::SameLine        ( );
-    if (ImGui::RadioButton ("Based on mouse cursor", &_registry.iDimCovers, 2))
+    if (ImGui::RadioButton (u8"基于鼠标光标r", &_registry.iDimCovers, 2))
       _registry.regKVDimCovers.putData (                        _registry.iDimCovers);
     ImGui::TreePop         ( );
 
     ImGui::Spacing         ( );
           
     ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), ICON_FA_EXCLAMATION_CIRCLE);
-    SKIF_ImGui_SetHoverTip ("Move the mouse over each option to get more information.");
+    SKIF_ImGui_SetHoverTip (u8"将鼠标移到每个选项上以获取更多信息.");
     ImGui::SameLine        ( );
     ImGui::TextColored     (
       ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-        "Disable UI elements:"
+      u8"禁用UI元素:"
     );
     ImGui::TreePush        ("");
 
@@ -864,39 +864,39 @@ SKIF_UI_Tab_DrawSettings (void)
     }
 
     SKIF_ImGui_SetHoverTip (
-      "This application will appear smaller on HiDPI monitors."
+      u8"这个应用程序在HiDPI显示器上会显得更小."
     );
 
     ImGui::SameLine ( );
     ImGui::Spacing  ( );
     ImGui::SameLine ( );
 
-    if (ImGui::Checkbox ("Tooltips", &_registry.bDisableTooltips))
+    if (ImGui::Checkbox (u8"工具提示", &_registry.bDisableTooltips))
       _registry.regKVDisableTooltips.putData (  _registry.bDisableTooltips);
 
     if (ImGui::IsItemHovered ())
       SKIF_StatusBarText = "Info: ";
 
-    SKIF_ImGui_SetHoverText ("This is where the info will be displayed.");
-    SKIF_ImGui_SetHoverTip  ("The info will instead be displayed in the status bar at the bottom."
-                              "\nNote that some links cannot be previewed as a result.");
+    SKIF_ImGui_SetHoverText (u8"这是显示信息的地方.");
+    SKIF_ImGui_SetHoverTip  (u8"信息将显示在底部的状态栏中."
+      u8"\n请注意，有些链接因此无法预览.");
 
     ImGui::SameLine ( );
     ImGui::Spacing  ( );
     ImGui::SameLine ( );
 
-    if (ImGui::Checkbox ("Status bar", &_registry.bDisableStatusBar))
+    if (ImGui::Checkbox (u8"状态条", &_registry.bDisableStatusBar))
       _registry.regKVDisableStatusBar.putData (   _registry.bDisableStatusBar);
 
     SKIF_ImGui_SetHoverTip (
-      "Combining this with disabled UI tooltips will hide all context based information or tips."
+      u8"将此功能与禁用的UI工具提示相结合，将隐藏所有基于上下文的信息或提示."
     );
 
     ImGui::SameLine ( );
     ImGui::Spacing  ( );
     ImGui::SameLine ( );
 
-    if (ImGui::Checkbox ("Borders", &_registry.bDisableBorders))
+    if (ImGui::Checkbox (u8"边界", &_registry.bDisableBorders))
     {
       _registry.regKVDisableBorders.putData (  _registry.bDisableBorders);
       if (_registry.bDisableBorders)
@@ -918,7 +918,7 @@ SKIF_UI_Tab_DrawSettings (void)
       ImGui::BeginGroup     ( );
       ImGui::TextColored    (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), ICON_FA_EXCLAMATION_CIRCLE);
       ImGui::SameLine       ( );
-      ImGui::TextColored    (ImColor(0.68F, 0.68F, 0.68F, 1.0f), "Context based information or tips will not appear!");
+      ImGui::TextColored    (ImColor(0.68F, 0.68F, 0.68F, 1.0f), u8"基于上下文的信息或提示将不会出现!");
       ImGui::EndGroup       ( );
     }
 
@@ -929,20 +929,20 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::TreePush      ( );
             
     ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), ICON_FA_EXCLAMATION_CIRCLE);
-    SKIF_ImGui_SetHoverTip ("Every time the UI renders a frame, Shelly the Ghost moves a little bit.");
+    SKIF_ImGui_SetHoverTip (u8"每次UI渲染一个帧时，Shelly the Ghost都会移动一点.");
     ImGui::SameLine        ( );
     ImGui::TextColored (
       ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
         "Show Shelly the Ghost:"
     );
     ImGui::TreePush        ("_registry.iGhostVisibility");
-    if (ImGui::RadioButton ("Never",                    &_registry.iGhostVisibility, 0))
+    if (ImGui::RadioButton (u8"从不",                    &_registry.iGhostVisibility, 0))
       _registry.regKVGhostVisibility.putData (                     _registry.iGhostVisibility);
     ImGui::SameLine        ( );
-    if (ImGui::RadioButton ("Always",                   &_registry.iGhostVisibility, 1))
+    if (ImGui::RadioButton (u8"经常",                   &_registry.iGhostVisibility, 1))
       _registry.regKVGhostVisibility.putData (                     _registry.iGhostVisibility);
     ImGui::SameLine        ( );
-    if (ImGui::RadioButton ("While service is running", &_registry.iGhostVisibility, 2))
+    if (ImGui::RadioButton (u8"服务运行时", &_registry.iGhostVisibility, 2))
       _registry.regKVGhostVisibility.putData (                     _registry.iGhostVisibility);
     ImGui::TreePop         ( );
 
@@ -953,10 +953,10 @@ SKIF_UI_Tab_DrawSettings (void)
     if (SKIF_bCanAllowTearing)
     {
       ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), ICON_FA_EXCLAMATION_CIRCLE);
-      SKIF_ImGui_SetHoverTip ("Move the mouse over each option to get more information");
+      SKIF_ImGui_SetHoverTip (u8"将鼠标移到每个选项上以获取更多信息");
       ImGui::SameLine        ( );
       ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-                              "UI Refresh Mode: (restart required)"
+                              u8"UI刷新模式:(需要重启)"
       );
 
       enum SKIF_SyncModes {
@@ -969,16 +969,16 @@ SKIF_UI_Tab_DrawSettings (void)
                            : Sync_VRR_Compat;
 
       ImGui::TreePush        ("SKIF_iSyncMode");
-      if (ImGui::RadioButton ("VRR Compatibility", &SKIF_iSyncMode, Sync_VRR_Compat))
+      if (ImGui::RadioButton (u8"VRR 兼容性", &SKIF_iSyncMode, Sync_VRR_Compat))
         _registry.regKVDisableVSYNC.putData ((_registry.bDisableVSYNC = false));
       SKIF_ImGui_SetHoverTip (
-        "Avoids signal loss and flickering on VRR displays"
+        u8"避免VRR显示器上的信号丢失和闪烁"
       );
       ImGui::SameLine        ( );
-      if (ImGui::RadioButton ("Normal",         &SKIF_iSyncMode, Sync_None))
+      if (ImGui::RadioButton (u8"正常的",         &SKIF_iSyncMode, Sync_None))
         _registry.regKVDisableVSYNC.putData ((_registry.bDisableVSYNC = true));
       SKIF_ImGui_SetHoverTip (
-        "Improves UI response on low fixed-refresh rate displays"
+        u8"改善低固定刷新率显示器的UI响应"
       );
       ImGui::TreePop         ( );
       ImGui::Spacing         ( );
@@ -993,7 +993,7 @@ SKIF_UI_Tab_DrawSettings (void)
           
     ImGui::TextColored (
       ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-        "Color theme: (restart required)"
+        u8"颜色主题: (重新启动要求)"
     );
     ImGui::TreePush      ("");
 
@@ -1030,7 +1030,7 @@ SKIF_UI_Tab_DrawSettings (void)
 #pragma endregion
 
 #pragma region Section: Advanced
-  if (ImGui::CollapsingHeader ("Advanced###SKIF_SettingsHeader-2"))
+  if (ImGui::CollapsingHeader (u8"高级###SKIF_SettingsHeader-2"))
   {
     ImGui::PushStyleColor   (
       ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextBase)
@@ -1044,11 +1044,11 @@ SKIF_UI_Tab_DrawSettings (void)
       ImGui::SetColumnWidth (0, 510.0f * SKIF_ImGui_GlobalDPIScale) //SKIF_vecCurrentMode.x / 2.0f)
     );
 
-    if ( ImGui::Checkbox ( "Always open this app on the same monitor as the mouse", &_registry.bOpenAtCursorPosition ) )
+    if ( ImGui::Checkbox ( u8"始终在与鼠标相同的显示器上打开此应用程序", &_registry.bOpenAtCursorPosition ) )
       _registry.regKVOpenAtCursorPosition.putData (                                            _registry.bOpenAtCursorPosition );
 
     if ( ImGui::Checkbox (
-            "Allow multiple instances of this app",
+            u8"允许此应用程序的多个实例",
               &_registry.bAllowMultipleInstances )
         )
     {
@@ -1081,7 +1081,7 @@ SKIF_UI_Tab_DrawSettings (void)
 
     ImGui::TreePush         ( );
 
-    if (ImGui::Checkbox  ("Do not stop the injection service when this app closes",
+    if (ImGui::Checkbox  (u8"不要在应用关闭时停止注入服务",
                                             &_registry.bAllowBackgroundService))
       _registry.regKVAllowBackgroundService.putData (  _registry.bAllowBackgroundService);
 
@@ -1131,7 +1131,7 @@ SKIF_UI_Tab_DrawSettings (void)
 #pragma endregion
 
 #pragma region Section: Whitelist / Blacklist
-  if (ImGui::CollapsingHeader ("Whitelist / Blacklist###SKIF_SettingsHeader-5")) //, ImGuiTreeNodeFlags_DefaultOpen)) // Disabled auto-open for this section
+  if (ImGui::CollapsingHeader (u8"白名单 / 黑名单###SKIF_SettingsHeader-5")) //, ImGuiTreeNodeFlags_DefaultOpen)) // Disabled auto-open for this section
   {
     static bool white_edited = false,
                 black_edited = false,
@@ -1202,7 +1202,7 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::Spacing    ();
 
     ImGui::PushStyleColor (ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextBase));
-    ImGui::TextWrapped    ("The following lists manage Special K in processes as patterns are matched against the full path of the injected process.");
+    ImGui::TextWrapped    (u8"以下列表管理进程中的Special K，因为模式与注入进程的完整路径相匹配.");
 
     ImGui::Spacing    ();
     ImGui::Spacing    ();
@@ -1210,7 +1210,7 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::BeginGroup ();
     ImGui::Spacing    ();
     ImGui::SameLine   (); ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info),   ICON_FA_EXCLAMATION_CIRCLE);
-    ImGui::SameLine   (); ImGui::Text        ("Easiest is to use the name of the executable or folder of the game.");
+    ImGui::SameLine   (); ImGui::Text        (u8"最简单的方法是使用游戏的可执行文件或文件夹的名称.");
     ImGui::EndGroup   ();
 
     SKIF_ImGui_SetHoverTip (
@@ -1221,7 +1221,7 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::BeginGroup ();
     ImGui::Spacing    ();
     ImGui::SameLine   (); ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info),   ICON_FA_EXCLAMATION_CIRCLE);
-    ImGui::SameLine   (); ImGui::Text        ("Typing the name of a shared parent folder will match all applications below that folder.");
+    ImGui::SameLine   (); ImGui::Text        (u8"键入共享父文件夹的名称将匹配该文件夹下的所有应用程序.");
     ImGui::EndGroup   ();
 
     SKIF_ImGui_SetHoverTip (
@@ -1235,27 +1235,27 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::BeginGroup ();
     ImGui::Spacing    ();
     ImGui::SameLine   (); ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Yellow), ICON_FA_EXCLAMATION_CIRCLE);
-    ImGui::SameLine   (); ImGui::Text ("Note that these lists do not prevent Special K from being injected into processes.");
+    ImGui::SameLine   (); ImGui::Text (u8"注意，这些列表并不能阻止Special K被注入到进程中.");
     ImGui::EndGroup   ();
 
     if (_registry.bDisableTooltips)
     {
       SKIF_ImGui_SetHoverTip (
-        "These lists control whether Special K should be enabled (the whitelist) to hook APIs etc,"
-        "\nor remain disabled/idle/inert (the blacklist) within the injected process."
+        u8"这些列表控制是否应该启用Special K(白名单)来挂钩api等,"
+        u8"\n或在注入过程中保持禁用/闲置/惰性(黑名单)."
       );
     }
 
     else
     {
       SKIF_ImGui_SetHoverTip (
-        "The global injection service injects Special K into any process that deals"
-        "\nwith system input or some sort of window or keyboard/mouse input activity."
+        u8"全局注入服务将Special K注入到任何处理"
+        u8"\n与系统输入或某种窗口或键盘/鼠标输入活动."
         "\n\n"
 
 
-        "These lists control whether Special K should be enabled (the whitelist),"
-        "\nor remain idle/inert (the blacklist) within the injected process."
+        u8"这些列表控制是否应该启用Special K(白名单),"
+        u8"\n或在注入过程中保持空闲/惰性(黑名单)."
       );
     }
 
@@ -1263,11 +1263,11 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::BeginGroup ();
     ImGui::Spacing    ();
     ImGui::SameLine   (); ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), ICON_FA_EXTERNAL_LINK_ALT);
-    ImGui::SameLine   (); ImGui::Text        ("More on the wiki.");
+    ImGui::SameLine   (); ImGui::Text        (u8"More on the wiki.");
     ImGui::EndGroup   ();
 
     SKIF_ImGui_SetMouseCursorHand ();
-    SKIF_ImGui_SetHoverText       ("https://wiki.special-k.info/en/SpecialK/Global#the-global-injector-and-multiplayer-games");
+    SKIF_ImGui_SetHoverText       (u8"https://wiki.special-k.info/en/SpecialK/Global#the-global-injector-and-multiplayer-games");
 
     if (ImGui::IsItemClicked ())
       SKIF_Util_OpenURI (L"https://wiki.special-k.info/en/SpecialK/Global#the-global-injector-and-multiplayer-games");
@@ -1285,7 +1285,7 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::SameLine    ( );
     ImGui::TextColored (
       ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-        "Whitelist Patterns:"
+      u8"白名单模式:"
     );
 
     SKIF_ImGui_Spacing ();
@@ -1300,8 +1300,8 @@ SKIF_UI_Tab_DrawSettings (void)
     if (*_inject.whitelist == '\0')
     {
       SKIF_ImGui_SetHoverTip (
-        "These are the patterns used internally to enable Special K for these specific platforms."
-        "\nThey are presented here solely as examples of how a potential pattern might look like."
+        u8"这些是内部使用的模式，用于为这些特定平台启用Special K."
+        u8"\n在这里，它们只是作为潜在模式的示例."
       );
     }
 
@@ -1317,14 +1317,14 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::SameLine    ( );
     ImGui::TextColored (
       ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-        "Add Common Patterns:"
+        u8"添加常用模式:"
     );
 
     SKIF_ImGui_Spacing ();
 
     ImGui::PushStyleColor (ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextBase));
-    ImGui::TextWrapped    ("Click on an item below to add it to the whitelist, or hover over it "
-                            "to display more information about what the pattern covers.");
+    ImGui::TextWrapped    (u8"单击下面的项目以将其添加到白名单中，或将鼠标悬停在其上 "
+      u8"以显示有关模式所涵盖内容的更多信息.");
     ImGui::PopStyleColor  ();
 
     SKIF_ImGui_Spacing ();
@@ -1339,11 +1339,11 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::SameLine    ();
 
     ImGui::BeginGroup  ();
-    if (ImGui::Selectable ("Games"))
+    if (ImGui::Selectable (u8"Games"))
     {
       white_edited = true;
 
-      _inject._AddUserList("Games", true);
+      _inject._AddUserList(u8"Games", true);
     }
 
     SKIF_ImGui_SetHoverTip (
@@ -1352,11 +1352,11 @@ SKIF_UI_Tab_DrawSettings (void)
     );
 
     /*
-    if (ImGui::Selectable ("WindowsApps"))
+    if (ImGui::Selectable (u8"WindowsApps"))
     {
       white_edited = true;
 
-      _inject._AddUserList("WindowsApps", true);
+      _inject._AddUserList(u8"WindowsApps", true);
     }
 
     SKIF_ImGui_SetHoverTip (
@@ -1376,10 +1376,10 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::SameLine    ( );
     ImGui::TextColored (
       ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-        "Blacklist Patterns:"
+        "黑名单模式:"
     );
     ImGui::SameLine    ( );
-    ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextBase), "(Does not prevent injection! Use this to exclude stuff from being whitelisted)");
+    ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextBase), u8"(不防注射!使用此选项可以将某些内容排除在白名单之外)");
 
     SKIF_ImGui_Spacing ();
 
@@ -1405,7 +1405,7 @@ SKIF_UI_Tab_DrawSettings (void)
     }
 
     // Hotkey: Ctrl+S
-    if (ImGui::Button (ICON_FA_SAVE " Save Changes") || ((! bDisabled) && ImGui::GetIO().KeyCtrl && ImGui::GetIO().KeysDown['S']))
+    if (ImGui::Button (ICON_FA_SAVE " Save Changes") || ((!bDisabled) && ImGui::GetIO().KeyCtrl && ImGui::GetIO().KeysDown['S']))
     {
       // Clear the active ID to prevent ImGui from holding outdated copies of the variable
       //   if saving succeeds, to allow _StoreList to update the variable successfully
@@ -1478,7 +1478,7 @@ SKIF_UI_Tab_DrawSettings (void)
   
 #pragma region Section: Extended CPU Hardware Reporting [64-bit only]
 #ifdef _WIN64
-  if (ImGui::CollapsingHeader ("Extended CPU Hardware Reporting###SKIF_SettingsHeader-4"))
+  if (ImGui::CollapsingHeader (u8"扩展CPU硬件报告###SKIF_SettingsHeader-4"))
   {
     ImGui::PushStyleColor (
       ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextBase)
@@ -1490,7 +1490,7 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::BeginGroup  ();
 
     ImGui::TextWrapped    (
-      "Special K can make use of an optional kernel driver to provide additional metrics in the CPU widget."
+      u8"Special K可以使用可选的内核驱动程序在CPU小部件中提供额外的度量."
     );
 
     ImGui::Spacing     ();
@@ -1501,7 +1501,7 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::SameLine    ();
     ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), (const char *)u8"\u2022 ");
     ImGui::SameLine    ();
-    ImGui::Text        ("Extends the CPU widget with thermals, energy, and precise clock rate on modern hardware.");
+    ImGui::Text        (u8"在现代硬件上扩展CPU小部件的热量，能量和精确的时钟速率.");
     ImGui::EndGroup    ();
 
     ImGui::Spacing();
@@ -1509,7 +1509,7 @@ SKIF_UI_Tab_DrawSettings (void)
 
     ImGui::TextColored (
       ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-                        "Requirement:"
+                        u8"要求:"
     );
 
     ImGui::BeginGroup  ();
@@ -1517,7 +1517,7 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::SameLine    ();
     ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), (const char *)u8"\u2022 ");
     ImGui::SameLine    ();
-    ImGui::Text        ("Kernel Driver:");
+    ImGui::Text        (u8"内核驱动程序:");
     ImGui::SameLine    ();
 
     static std::string btnDriverLabel;
@@ -1548,7 +1548,7 @@ SKIF_UI_Tab_DrawSettings (void)
       ImGui::SameLine    ();
       ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), (const char *)u8"\u2022 ");
       ImGui::SameLine    ();
-      ImGui::Text        ("Conflict With:");
+      ImGui::Text        (u8"Conflict With:");
       ImGui::SameLine    ();
       ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption), SK_WideCharToUTF8 (driverBinaryPath).c_str ());
     }
@@ -1631,7 +1631,7 @@ SKIF_UI_Tab_DrawSettings (void)
       ImGui::BeginGroup();
       ImGui::Spacing();
       ImGui::SameLine(); ImGui::TextColored(ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info),
-        "An older version of the driver is installed."
+        u8"安装了旧版本的驱动程序."
       );
       ImGui::EndGroup();
     }
@@ -1647,7 +1647,7 @@ SKIF_UI_Tab_DrawSettings (void)
 #pragma endregion
   
 #pragma region Section: SwapChain Presentation Monitor
-  if (ImGui::CollapsingHeader ("SwapChain Presentation Monitor###SKIF_SettingsHeader-3", ImGuiTreeNodeFlags_DefaultOpen))
+  if (ImGui::CollapsingHeader (u8"SwapChain 表示监视器###SKIF_SettingsHeader-3", ImGuiTreeNodeFlags_DefaultOpen))
   {
     ImGui::PushStyleColor (
       ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextBase)
@@ -1663,7 +1663,7 @@ SKIF_UI_Tab_DrawSettings (void)
             
     ImGui::TextColored (
       ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-                        "Tell at a glance whether:"
+                        u8"看一眼就知道是否:"
     );
 
     ImGui::BeginGroup  ();
@@ -1671,12 +1671,12 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::SameLine    ();
     ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), ICON_FA_EXTERNAL_LINK_ALT);
     ImGui::SameLine    ();
-    ImGui::TextWrapped ("DirectFlip optimizations are engaged, and desktop composition (DWM) is bypassed.");
+    ImGui::TextWrapped (u8"DirectFlip进行了优化，并且绕过了桌面组合(DWM).");
     ImGui::EndGroup    ();
 
-    SKIF_ImGui_SetHoverTip("Appears as 'Hardware: Independent Flip' or 'Hardware Composed: Independent Flip'");
+    SKIF_ImGui_SetHoverTip(u8"显示为“硬件:独立翻转”或“硬件组成:独立翻转”");
     SKIF_ImGui_SetMouseCursorHand ();
-    SKIF_ImGui_SetHoverText       ("https://wiki.special-k.info/en/SwapChain#fse-fso-independent-flip-etc-sorry-but-what");
+    SKIF_ImGui_SetHoverText       (u8"https://wiki.special-k.info/en/SwapChain#fse-fso-independent-flip-etc-sorry-but-what");
 
     if (ImGui::IsItemClicked      ())
       SKIF_Util_OpenURI           (L"https://wiki.special-k.info/en/SwapChain#fse-fso-independent-flip-etc-sorry-but-what");
@@ -1686,15 +1686,15 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::SameLine    ();
     ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), ICON_FA_EXTERNAL_LINK_ALT);
     ImGui::SameLine    ();
-    ImGui::TextWrapped ("Legacy Exclusive Fullscreen (FSE) mode has enaged or if Fullscreen Optimizations (FSO) overrides it.");
+    ImGui::TextWrapped (u8"传统独占全屏(FSE)模式已启用，或者全屏优化(FSO)覆盖了它.");
     ImGui::EndGroup    ();
 
     SKIF_ImGui_SetHoverTip(
-                        "FSE appears as 'Hardware: Legacy Flip' or 'Hardware: Legacy Copy to front buffer'"
-                        "\nFSO appears as 'Hardware: Independent Flip' or 'Hardware Composed: Independent Flip'"
+                        u8"FSE显示为“硬件:遗留翻转”或“硬件:遗留拷贝到前缓冲区”。"
+                        u8"\nFSO显示为“硬件:独立翻转”或“硬件组成:独立翻转”"
     );
     SKIF_ImGui_SetMouseCursorHand ();
-    SKIF_ImGui_SetHoverText       ("https://www.pcgamingwiki.com/wiki/Windows#Fullscreen_optimizations");
+    SKIF_ImGui_SetHoverText       (u8"https://www.pcgamingwiki.com/wiki/Windows#Fullscreen_optimizations");
 
     if (ImGui::IsItemClicked      ())
       SKIF_Util_OpenURI           (L"https://www.pcgamingwiki.com/wiki/Windows#Fullscreen_optimizations");
@@ -1704,18 +1704,18 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::SameLine    ();
     ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), ICON_FA_EXCLAMATION_CIRCLE);
     ImGui::SameLine    ();
-    ImGui::TextWrapped ("The game is running in a suboptimal presentation mode.");
+    ImGui::TextWrapped (u8"游戏以次优呈现模式运行.");
     ImGui::EndGroup    ();
 
-    SKIF_ImGui_SetHoverTip("Appears as 'Composed: Flip', 'Composed: Composition Atlas',"
-                            "\n'Composed: Copy with CPU GDI', or 'Composed: Copy with GPU GDI'");
+    SKIF_ImGui_SetHoverTip(u8"显示为 '组成: Flip', '组成: Composition Atlas',"
+                            "\n'组成: Copy with CPU GDI', or '组成: Copy with GPU GDI'");
 
     ImGui::Spacing();
     ImGui::Spacing();
             
     ImGui::TextColored (
       ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-                        "Requirement:"
+                        u8"要求:"
     );
 
     static BOOL  pfuAccessToken = FALSE;
@@ -1739,14 +1739,14 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::SameLine    ();
     ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), (const char *)u8"\u2022 ");
     ImGui::SameLine    ();
-    ImGui::Text        ("Granted 'Performance Log Users' permission?");
+    ImGui::Text        (u8"已授予“性能日志用户”权限?");
     ImGui::SameLine    ();
     if      (pfuState == Granted)
-      ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Success), "Yes");
+      ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Success), u8"是");
     else if (pfuState == Missing)
-      ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info),    "No");
+      ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), u8"否");
     else // (pfuState == Pending)
-      ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info),    "Restart required"); //"Yes, but a sign out from Windows is needed to allow the changes to take effect.");
+      ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), u8"重新启动要求"); //"Yes, but a sign out from Windows is needed to allow the changes to take effect.");
     ImGui::EndGroup    ();
 
     ImGui::Spacing  ();
@@ -1802,7 +1802,7 @@ SKIF_UI_Tab_DrawSettings (void)
     else
     {
       SKIF_ImGui_SetHoverTip(
-        "Administrative privileges are required on the system to toggle this."
+        u8"需要系统上的管理权限才能进行切换."
       );
     }
 
@@ -1814,25 +1814,25 @@ SKIF_UI_Tab_DrawSettings (void)
 
     ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Success), ICON_FA_THUMBS_UP);
     ImGui::SameLine    ( );
-    ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Success), "Minimal latency:");
+    ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Success), u8"最小的延迟:");
 
     ImGui::TreePush    ();
     ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), (const char *)u8"\u2022 ");
     ImGui::SameLine    ();
-    ImGui::Text        ("Hardware: Independent Flip");
+    ImGui::Text        (u8"硬件:独立翻转");
 
     ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), (const char *)u8"\u2022 ");
     ImGui::SameLine    ();
-    ImGui::Text        ("Hardware Composed: Independent Flip");
+    ImGui::Text        (u8"硬件组成:独立翻转");
 
     ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), (const char *)u8"\u2022 ");
     ImGui::SameLine    ();
-    ImGui::Text        ("Hardware: Legacy Flip");
+    ImGui::Text        (u8"硬件:遗留翻转");
 
     /* Extremely uncommon but included in the list anyway */
     ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), (const char *)u8"\u2022 ");
     ImGui::SameLine    ();
-    ImGui::TextColored (ImColor      (0.68F, 0.68F, 0.68F), "Hardware: Legacy Copy to front buffer");
+    ImGui::TextColored (ImColor      (0.68F, 0.68F, 0.68F), "硬件:遗留副本到前缓冲区");
     
     ImGui::TreePop     ();
 
@@ -1840,26 +1840,26 @@ SKIF_UI_Tab_DrawSettings (void)
             
     ImGui::TextColored (ImColor::HSV (0.11F, 1.F, 1.F), ICON_FA_THUMBS_DOWN);
     ImGui::SameLine    ();
-    ImGui::TextColored (ImColor::HSV (0.11F, 1.F, 1.F), "Undesireable latency:");
+    ImGui::TextColored (ImColor::HSV (0.11F, 1.F, 1.F), u8"不希望延迟:");
 
     ImGui::TreePush    ();
     ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), (const char *)u8"\u2022 ");
     ImGui::SameLine    ();
-    ImGui::Text        ("Composed: Flip");
+    ImGui::Text        (u8"组成: Flip");
 
     /* Disabled as PresentMon doesn't detect this any longer as of May 2022.
     ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), (const char *)u8"\u2022 ");
     ImGui::SameLine    ();
-    ImGui::Text        ("Composed: Composition Atlas");
+    ImGui::Text        (u8"Composed: Composition Atlas");
     */
 
     ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), (const char *)u8"\u2022 ");
     ImGui::SameLine    ();
-    ImGui::Text        ("Composed: Copy with GPU GDI");
+    ImGui::Text        (u8"组成: Copy with GPU GDI");
 
     ImGui::TextColored (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info), (const char *)u8"\u2022 ");
     ImGui::SameLine    ();
-    ImGui::Text        ("Composed: Copy with CPU GDI");
+    ImGui::Text        (u8"组成: Copy with CPU GDI");
     ImGui::TreePop     ();
 
     ImGui::TreePop     ();
@@ -1877,14 +1877,14 @@ SKIF_UI_Tab_DrawSettings (void)
             
     ImGui::TextColored (
       ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-                        "Multi-Plane Overlay (MPO) Support"
+                        u8"Multi-Plane Overlay (MPO) Support"
     );
 
     ImGui::TextWrapped    (
-      "Multi-plane overlays (MPOs) are additional dedicated hardware scanout planes"
-      " enabling the GPU to partially take over composition from the DWM. This allows"
-      " games to bypass the DWM in various mixed scenarios or window modes,"
-      " eliminating the presentation latency that would otherwise be incurred."
+      u8"多平面覆盖(mpos)是额外的专用硬件扫描平面s"
+      u8" 使GPU能够部分地从DWM接管构图"
+      u8" 使得游戏可以在各种混合场景或窗口模式下绕过DWM,"
+      u8" 从而消除了呈现延迟."
     );
 
     SKIF_ImGui_Spacing ();
@@ -1895,24 +1895,24 @@ SKIF_UI_Tab_DrawSettings (void)
 
     ImGui::TextColored (
       ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-                        "Support among connected displays:"
+                        u8"连接显示器之间的支持:"
     );
 
     if (SKIF_Util_IsWindows10OrGreater ( ))
     {
-      ImGui::Text        ("Display");
+      ImGui::Text        (u8"显示");
       ImGui::SameLine    ( );
       ImGui::ItemSize    (ImVec2 (150.0f * SKIF_ImGui_GlobalDPIScale - ImGui::GetCursorPos().x, ImGui::GetTextLineHeight()));
       ImGui::SameLine    ( );
-      ImGui::Text        ("Planes");
+      ImGui::Text        (u8"Planes");
       ImGui::SameLine    ( );
       ImGui::ItemSize    (ImVec2 (235.0f * SKIF_ImGui_GlobalDPIScale - ImGui::GetCursorPos().x, ImGui::GetTextLineHeight()));
       ImGui::SameLine    ( );
-      ImGui::Text        ("Stretch");
+      ImGui::Text        (u8"拉伸");
       ImGui::SameLine    ( );
       ImGui::ItemSize    (ImVec2 (360.0f * SKIF_ImGui_GlobalDPIScale - ImGui::GetCursorPos().x, ImGui::GetTextLineHeight()));
       ImGui::SameLine    ( );
-      ImGui::Text        ("Capabilities");
+      ImGui::Text        (u8"Capabilities");
 
       for (auto& monitor : Monitors)
       {
@@ -1922,7 +1922,7 @@ SKIF_UI_Tab_DrawSettings (void)
                                                             : ImVec4 (ImColor::HSV (0.11F, 1.F, 1.F));
 
         ImGui::BeginGroup    ( );
-        //ImGui::Text        ("%u", monitor.Index);
+        //ImGui::Text        (u8"%u", monitor.Index);
         //ImGui::SameLine    ( );
         ImGui::TextColored   (colName, monitor.Name.c_str());
         SKIF_ImGui_SetHoverTip (monitor.DeviceNameGdi.c_str());
@@ -1936,7 +1936,7 @@ SKIF_UI_Tab_DrawSettings (void)
         if (monitor.MaxStretchFactor != monitor.MaxShrinkFactor)
           ImGui::Text        (stretchFormat.c_str(), monitor.MaxStretchFactor, monitor.MaxShrinkFactor);
         else
-          ImGui::Text        ("Not Supported");
+          ImGui::Text        (u8"不支持");
         ImGui::SameLine      ( );
         if (monitor.MaxPlanes > 1)
         {
@@ -1948,13 +1948,13 @@ SKIF_UI_Tab_DrawSettings (void)
         else {
           ImGui::ItemSize    (ImVec2 (360.0f * SKIF_ImGui_GlobalDPIScale - ImGui::GetCursorPos().x, ImGui::GetTextLineHeight()));
           ImGui::SameLine    ( );
-          ImGui::Text        ("Not Supported");
+          ImGui::Text        (u8"不支持");
         }
         ImGui::EndGroup      ( );
       }
     }
     else {
-      ImGui::Text      ("Reporting MPO capabilities requires Windows 10 or newer.");
+      ImGui::Text      (u8"报告MPO功能需要Windows 10或更新版本.");
     }
 
     ImGui::EndGroup    ();
@@ -1968,7 +1968,7 @@ SKIF_UI_Tab_DrawSettings (void)
 
     ImGui::TextColored (
       ImGui::GetStyleColorVec4 (ImGuiCol_SKIF_TextCaption),
-                        "Minimum requirement:"
+                        u8"最低要求:"
     );
 
     ImGui::BeginGroup  ();
@@ -1976,7 +1976,7 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::SameLine    ();
     ImGui::TextColored (ImGui::GetStyleColorVec4 (ImGuiCol_SKIF_Info), (const char *)u8"\u2022 ");
     ImGui::SameLine    ();
-    ImGui::Text        ("AMD: Radeon RX Vega + Adrenalin Edition 22.5.2 drivers");
+    ImGui::Text        (u8"AMD: Radeon RX Vega + Adrenalin Edition 22.5.2 drivers");
     ImGui::EndGroup    ();
     // Exact hardware models are unknown, but a bunch of dxdiag.txt files dropped online suggests Radeon RX Vega and newer had MPO support.
     // ID3D13Sylveon on the DirectX Discord mentioned that driver support was added in 22.20, so AMD Software: Adrenalin Edition 22.5.2.
@@ -1986,7 +1986,7 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::SameLine    ();
     ImGui::TextColored (ImGui::GetStyleColorVec4 (ImGuiCol_SKIF_Info), (const char *)u8"\u2022 ");
     ImGui::SameLine    ();
-    ImGui::Text        ("Intel: HD Graphics 510-515 (Core 6th gen)");
+    ImGui::Text        (u8"Intel: HD Graphics 510-515 (Core 6th gen)");
     ImGui::EndGroup    ();
     // From https://www.intel.com/content/www/us/en/developer/articles/training/tutorial-migrating-your-apps-to-directx-12-part-4.html
 
@@ -1995,17 +1995,17 @@ SKIF_UI_Tab_DrawSettings (void)
     ImGui::SameLine    ();
     ImGui::TextColored (ImGui::GetStyleColorVec4 (ImGuiCol_SKIF_Info), (const char *)u8"\u2022 ");
     ImGui::SameLine    ();
-    ImGui::Text        ("Nvidia: GTX 16/RTX 20 series (Turing) + R460 drivers");
+    ImGui::Text        (u8"Nvidia: GTX 16/RTX 20 series (Turing) + R460 drivers");
     ImGui::EndGroup    ();
     // Official Nvidia requirement from their driver release notes is Volta and later GPUs and the Release 460 driver and later
     // As Volta only had the Titan V and Quadro GV100 models we can just say GTX 16/RTX 20 series
     
     ImGui::Spacing     ();
 
-    ImGui::TextWrapped ("Support depends on the GPU and display configuration."
-                        " Using unusual display configurations, such as 10 bpc"
-                        " in SDR mode, can prevent MPO capabilities from engaging"
-                        " for the display.");
+    ImGui::TextWrapped (u8"支持取决于GPU和显示配置."
+      u8" 使用不寻常的显示配置"
+      u8" 例如SDR模式下的10bpc"
+      u8" 可能会阻止MPO功能用于显示.");
 
     ImGui::PopStyleColor ();
 

@@ -51,8 +51,8 @@
 
 #define SKIF_LOG_SEPARATOR           "----------------------------"
 
-#define SKIF_WINDOW_TITLE_A          "Special K Injection Frontend"
-#define SKIF_WINDOW_TITLE_W       _L("Special K Injection Frontend")
+#define SKIF_WINDOW_TITLE_A          u8"SpecialK注入前端中文本地化"
+#define SKIF_WINDOW_TITLE_W       _L("Special K Injection Frontend Chinese Localization")
 #define SKIF_WINDOW_TITLE             SKIF_WINDOW_TITLE_W
 #define SKIF_WINDOW_TITLE_SHORT_A    "Special K"
 #define SKIF_WINDOW_TITLE_SHORT_W _L("Special K")

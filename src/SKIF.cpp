@@ -484,7 +484,7 @@ SKIF_ImGui_InitFonts (float fontSize)
 
   fontDir /= L"Fonts";
 
-  std::wstring standardFont = (tinyDPIFonts) ? L"Verdana.ttf" : L"Tahoma.ttf";
+  std::wstring standardFont = (tinyDPIFonts) ? L"Verdana.ttf" :  L"msyh.ttc";
 
   std::error_code ec;
   // Create any missing directories
@@ -603,7 +603,7 @@ SKIF_ImGui_InitFonts (float fontSize)
 
   io.Fonts->AddFontDefault ();
 
-  fontConsolas = SKIF_ImGui_LoadFont (L"Consola.ttf", fontSize - 4.0f, SK_ImGui_GetGlyphRangesDefaultEx());
+  fontConsolas = SKIF_ImGui_LoadFont (L"msyh.ttc", fontSize - 4.0f, SK_ImGui_GetGlyphRangesDefaultEx());
   //fontConsolas = SKIF_ImGui_LoadFont ((fontDir / L"NotoSansMono-Regular.ttf"), fontSize/* - 4.0f*/, SK_ImGui_GetGlyphRangesDefaultEx());
 }
 
@@ -615,7 +615,7 @@ HWND hWndOrigForeground;
 void
 SKIF_ProxyCommandAndExitIfRunning (LPWSTR lpCmdLine)
 {
-  PLOG_DEBUG << "Processing command line arguments: " << lpCmdLine;
+  PLOG_DEBUG << u8"正在处理命令行参数: " << lpCmdLine;
 
   HWND hwndAlreadyExists =
     FindWindowExW (0, 0, SKIF_WindowClass, nullptr);
@@ -1488,7 +1488,7 @@ void SKIF_UI_DrawComponentVersion (void)
   ImGui::SameLine         ( );
   ImGui::TextColored      (ImGui::GetStyleColorVec4(ImGuiCol_CheckMark), (const char *)u8"\u2022 ");
   ImGui::SameLine         ( );
-  ImGui::TextColored      (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),    "Frontend (SKIF)");
+  ImGui::TextColored      (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),    u8"前端 (SKIF)");
 
   ImGui::EndGroup         ( );
   ImGui::SameLine         ( );
@@ -1519,7 +1519,7 @@ void SKIF_UI_DrawComponentVersion (void)
   ImGui::SameLine         ( );
   ImGui::TextColored      (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-      "View release notes..."
+      u8"查看发行说明..."
   );
   SKIF_ImGui_SetMouseCursorHand ( );
   if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
@@ -1553,16 +1553,16 @@ void SKIF_UI_DrawPlatformStatus (void)
   {
     ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Yellow), ICON_FA_EXCLAMATION_TRIANGLE " ");
     ImGui::SameLine        ( );
-    ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Yellow), "App is running as an administrator!");
-    SKIF_ImGui_SetHoverTip ( "Running elevated is not recommended as it will inject Special K into system processes.\n"
-                             "Please restart this app and the global injector service as a regular user.");
+    ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Yellow), u8"应用程序正在以管理员身份运行!");
+    SKIF_ImGui_SetHoverTip ( u8"不建议运行提升，因为它会将Special K注入系统进程.\n"
+                             u8"请以常规用户身份重新启动此应用程序和全局注射器服务.");
   }
   else {
     ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Success), ICON_FA_CHECK " ");
     ImGui::SameLine        ( );
-    ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Success), "App is running with normal privileges.");
-    SKIF_ImGui_SetHoverTip ( "This is the recommended option as Special K will not be injected\n"
-                             "into system processes nor games running as an administrator.");
+    ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Success), u8"应用程序正在以正常权限运行.");
+    SKIF_ImGui_SetHoverTip ( u8"这是推荐的选项，因为不会注入Special K\n"
+                             u8"进入系统进程或以管理员身份运行的游戏.");
   }
 
   ImGui::EndGroup         ( );
@@ -1658,28 +1658,28 @@ void SKIF_UI_DrawPlatformStatus (void)
         ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Yellow), ICON_FA_EXCLAMATION_TRIANGLE " ");
         ImGui::SameLine        ( );
         if (p.ProcessName == L"RTSS.exe")
-          ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Yellow), (p.Name + " is running and might conflict with Special K!").c_str() );
+          ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Yellow), (p.Name + u8" 正在运行，可能与Special K冲突!").c_str() );
         else
-          ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Yellow), (p.Name + " is running as an administrator!").c_str() );
+          ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Yellow), (p.Name + u8" 正在以管理员身份运行!").c_str() );
 
         if (isSKIFAdmin)
-          SKIF_ImGui_SetHoverTip (("It is not recommended to run either " + p.Name + " or this app as an administrator.\n"
-                                   "Please restart both as a normal user.").c_str());
+          SKIF_ImGui_SetHoverTip ((u8"也不建议运行 " + p.Name + " 或以管理员身份使用此应用程序.\n"
+            u8"请以普通用户身份重新启动两者.").c_str());
         else if (p.ProcessName == L"RTSS.exe")
-          SKIF_ImGui_SetHoverTip ( "RivaTuner Statistics Server is known to occasionally conflict with Special K.\n"
-                                   "Please stop it if Special K does not function as expected. You might have\n"
-                                   "to stop MSI Afterburner as well if you use that application.");
+          SKIF_ImGui_SetHoverTip (u8"已知RivaTuner统计服务器偶尔会与Special K发生冲突.\n"
+            u8"如果Special K无法正常工作，请停止它。\n"
+            u8"您可能也必须停止MSI Afterburner.");
         else if (p.ProcessName == L"SKIFsvc32.exe" || p.ProcessName == L"SKIFsvc64.exe")
-          SKIF_ImGui_SetHoverTip ( "Running elevated is not recommended as it will inject Special K into system processes.\n"
-                                   "Please restart the frontend and the global injector service as a regular user.");
+          SKIF_ImGui_SetHoverTip (u8"不建议运行提升，因为它会将Special K注入系统进程.\n"
+            u8"请以常规用户身份重新启动前端和全局注射器服务.");
         else
-          SKIF_ImGui_SetHoverTip (("Running elevated will prevent injection into these games.\n"
-                                   "Please restart " + p.Name + " as a normal user.").c_str());
+          SKIF_ImGui_SetHoverTip ((u8"Running elevated将防止注射到这些游戏中.\n"
+            u8"请重新启动 " + p.Name + " 作为普通用户.").c_str());
       }
       else {
         ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Success), ICON_FA_CHECK " ");
         ImGui::SameLine        ( );
-        ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Success), (p.Name + " is running.").c_str());
+        ImGui::TextColored     (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Success), (p.Name + u8" 正在运行.").c_str());
       }
 
       ImGui::EndGroup          ( );
@@ -1691,7 +1691,7 @@ void SKIF_UI_DrawPlatformStatus (void)
       ImGui::ItemSize         (ImVec2 (ImGui::CalcTextSize (ICON_FA_CHECK " ") .x, ImGui::GetTextLineHeight()));
       //ImGui::TextColored      (ImColor (0.68F, 0.68F, 0.68F), " " ICON_FA_MINUS " ");
       ImGui::SameLine         ( );
-      ImGui::TextColored      (ImColor (0.68F, 0.68F, 0.68F), (p.Name + " is stopped.").c_str());
+      ImGui::TextColored      (ImColor (0.68F, 0.68F, 0.68F), (p.Name + u8" 已停止.").c_str());
     }
 
 #ifdef _WIN64
@@ -1843,9 +1843,9 @@ void SKIF_Initialize (void)
     plog::init (plog::debug, logPath.c_str(), 10000000, 1);
 
 #ifdef _WIN64
-    PLOG_INFO << "Special K Injection Frontend (SKIF) 64-bit v " << SKIF_VERSION_STR_A;
+    PLOG_INFO << u8"Special K 注入前端 (SKIF) 64-bit v " << SKIF_VERSION_STR_A;
 #else
-    PLOG_INFO << "Special K Injection Frontend (SKIF) 32-bit v " << SKIF_VERSION_STR_A;
+    PLOG_INFO << u8"Special K 注入前端 (SKIF) 32-bit v " << SKIF_VERSION_STR_A;
 #endif
 
     PLOG_INFO << "Built " __TIME__ ", " __DATE__;
@@ -1902,31 +1902,31 @@ std::string SKIF_GetEffectivePowerMode (void)
   switch (enumEffectivePowerMode.load( ))
   {
   case EffectivePowerModeNone:
-    sMode = "None";
+    sMode = u8"无";
     break;
   case EffectivePowerModeBatterySaver:
-    sMode = "Battery Saver";
+    sMode = u8"电池节电器";
     break;
   case EffectivePowerModeBetterBattery:
-    sMode = "Better Battery";
+    sMode = u8"更好的电池";
     break;
   case EffectivePowerModeBalanced:
-    sMode = "Balanced";
+    sMode = u8"平衡的";
     break;
   case EffectivePowerModeHighPerformance:
-    sMode = "High Performance";
+    sMode = u8"高性能";
     break;
   case EffectivePowerModeMaxPerformance:
-    sMode = "Max Performance";
+    sMode = u8"最大性能";
     break;
   case EffectivePowerModeGameMode:
-    sMode = "Game Mode";
+    sMode = u8"游戏模式";
     break;
   case EffectivePowerModeMixedReality:
-    sMode = "Mixed Reality";
+    sMode = u8"混合现实";
     break;
   default:
-    sMode = "Unknown Mode";
+    sMode = u8"未知的模式";
     break;
   }
 

@@ -32,30 +32,30 @@ SKIF_UI_Tab_DrawAbout (void)
 
   ImGui::TextColored      (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-                            "Beginner's Guide to Special K (SK):"
+                            u8"Special K (SK)入门指南:"
                             );
 
   SKIF_ImGui_Spacing      ( );
 
-  ImGui::TextWrapped      ("Lovingly referred to as the Swiss Army Knife of PC gaming, Special K does a bit of everything. "
-                            "It is best known for fixing and enhancing graphics, its many detailed performance analysis and correction mods, "
-                            "and a constantly growing palette of tools that solve a wide variety of issues affecting PC games.");
-
+  ImGui::TextWrapped      ( u8"被人们亲切地称为PC游戏中的瑞士军刀,Special K什么都会做."
+    "它以修复和增强图形、许多详细的性能分析和校正模块而闻名,"
+    "以及不断增长的工具选项板,可解决影响PC游戏的各种问题.");
+  
   SKIF_ImGui_Spacing      ( );
 
-  ImGui::TextWrapped      ("Among its main features are a latency-free borderless window mode, HDR retrofit for "
-                            "SDR games, Nvidia Reflex addition in unsupported games, as well as texture modding "
-                            "for players and modders alike. While not all features are supported in all games, most "
-                            "DirectX 11 and 12 titles can make use of one if not more of these features."
+  ImGui::TextWrapped      (u8"其主要功能包括无延迟无边界窗口模式、 "
+    u8"SDR游戏，在不受支持的游戏中添加Nvidia Reflex，以及纹理修改 "
+    u8"无论是玩家还是改装者。虽然并非所有游戏都支持所有功能，但大多数 "
+    u8"DirectX 11和12游戏可以使用其中的一个（如果不是更多的话）功能."
   );
   ImGui::NewLine          ( );
-  ImGui::Text             ("To get started just hop on over to the");
+  ImGui::Text             (u8"要开始，只需跳到");
   ImGui::SameLine         ( );
   ImGui::TextColored      (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption), ICON_FA_GAMEPAD " Library");
   SKIF_ImGui_SetMouseCursorHand ( );
   if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) SKIF_Tab_ChangeTo = UITab_Library;
   ImGui::SameLine         ( );
-  ImGui::Text             ("and launch a game!");
+  ImGui::Text             (u8"并启动游戏!");
   ImGui::SameLine         ( );
   ImGui::TextColored      (ImColor::HSV (0.11F, 1.F, 1.F), ICON_FA_SMILE_BEAM);
 
@@ -66,7 +66,7 @@ SKIF_UI_Tab_DrawAbout (void)
 
   ImGui::TextColored      (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-                            "Getting started with Epic, GOG, Steam, or Xbox games:");
+    u8"开始使用Epic、GOG、Steam或Xbox游戏:");
 
   SKIF_ImGui_Spacing      ( );
 
@@ -76,13 +76,13 @@ SKIF_UI_Tab_DrawAbout (void)
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info),
                         "1 ");
   ImGui::SameLine         ( );
-  ImGui::Text             ("Go to the ");
+  ImGui::Text             (u8"转到 ");
   ImGui::SameLine         ( );
   ImGui::TextColored      (ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption), ICON_FA_GAMEPAD " Library");
   SKIF_ImGui_SetMouseCursorHand ( );
   if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) SKIF_Tab_ChangeTo = UITab_Library;
   ImGui::SameLine         ( );
-  ImGui::Text             ("tab.");
+  ImGui::Text             (u8"tab.");
 
   ImGui::Spacing          ( );
   ImGui::SameLine         ( );
@@ -90,7 +90,7 @@ SKIF_UI_Tab_DrawAbout (void)
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info),
                         "2 ");
   ImGui::SameLine         ( );
-  ImGui::TextWrapped      ("Select and launch the game.");
+  ImGui::TextWrapped      (u8"选择并启动游戏.");
 
   ImGui::NewLine          ( );
   ImGui::NewLine          ( );
@@ -99,7 +99,7 @@ SKIF_UI_Tab_DrawAbout (void)
 
   ImGui::TextColored      (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-      "Getting started with other games:"
+    u8"开始玩其他游戏:"
   );
 
   SKIF_ImGui_Spacing      ( );
@@ -110,7 +110,7 @@ SKIF_UI_Tab_DrawAbout (void)
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info),
                         "1 ");
   ImGui::SameLine         ( );
-  ImGui::Text             ("Go to the ");
+  ImGui::Text             (u8"转到 ");
   ImGui::SameLine         ( );
   ImGui::TextColored      (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
@@ -119,7 +119,7 @@ SKIF_UI_Tab_DrawAbout (void)
   SKIF_ImGui_SetMouseCursorHand ( );
   if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) SKIF_Tab_ChangeTo = UITab_Library;
   ImGui::SameLine         ( );
-  ImGui::Text             ("tab.");
+  ImGui::Text             (u8"tab.");
 
   ImGui::Spacing          ( );
   ImGui::SameLine         ( );
@@ -127,7 +127,7 @@ SKIF_UI_Tab_DrawAbout (void)
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info),
                         "2 ");
   ImGui::SameLine         ( );
-  ImGui::Text             ("Click on ");
+  ImGui::Text             (u8"点击 ");
   ImGui::SameLine         ( );
   ImGui::TextColored      (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
@@ -139,7 +139,7 @@ SKIF_UI_Tab_DrawAbout (void)
     SKIF_Tab_ChangeTo = UITab_Library;
   }
   ImGui::SameLine         ( );
-  ImGui::Text             ("to add the game to the list.");
+  ImGui::Text             (u8"to add the game to the list.");
 
   ImGui::Spacing          ( );
   ImGui::SameLine         ( );
@@ -147,7 +147,7 @@ SKIF_UI_Tab_DrawAbout (void)
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info),
                         "3 ");
   ImGui::SameLine         ( );
-  ImGui::TextWrapped      ("Launch the game.");
+  ImGui::TextWrapped      (u8"启动游戏.");
 
   ImGui::NewLine          ( );
   ImGui::NewLine          ( );
@@ -158,7 +158,7 @@ SKIF_UI_Tab_DrawAbout (void)
   ImGui::SameLine         ( );
   ImGui::TextColored      (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-      "Quick launch Special K for select games through Steam:"
+    u8"通过Steam为选定游戏快速推出Special K:"
   );
 
   SKIF_ImGui_Spacing      ( );
@@ -166,7 +166,7 @@ SKIF_UI_Tab_DrawAbout (void)
   extern int SKIF_RegisterApp (bool force = false);
   if (SKIF_RegisterApp      ( ) > 0)
   {
-    ImGui::TextWrapped      ("Your system is set up to quickly launch injection through Steam.");
+    ImGui::TextWrapped      (u8"您的系统设置为通过Steam快速启动注射.");
 
     SKIF_ImGui_Spacing      ( );
 
@@ -177,7 +177,7 @@ SKIF_UI_Tab_DrawAbout (void)
       ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info),
                           "1 ");
     ImGui::SameLine         ( );
-    ImGui::TextWrapped      ("Right click the desired game in Steam, and select \"Properties...\".");
+    ImGui::TextWrapped      (u8"在Steam中右键单击所需游戏，然后选择 \"Properties...\".");
     ImGui::EndGroup         ( );
 
     ImGui::BeginGroup       ( );
@@ -187,15 +187,15 @@ SKIF_UI_Tab_DrawAbout (void)
       ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info),
                           "2 ");
     ImGui::SameLine         ( );
-    ImGui::TextWrapped      ("Copy and paste the below into the \"Launch Options\" field.");
+    ImGui::TextWrapped      (u8"将以下内容复制并粘贴到 \"启动选项\" 域.");
     ImGui::EndGroup         ( );
 
-    ImGui::TreePush         ("");
+    ImGui::TreePush         (u8"");
     ImGui::Spacing          ( );
     ImGui::SameLine         ( );
     ImGui::PushStyleColor   (ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption));
     char szSteamCommand[MAX_PATH] = "SKIF %COMMAND%";
-    ImGui::InputTextEx      ("###Launcher", NULL, szSteamCommand, MAX_PATH, ImVec2(0, 0), ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputTextEx      (u8"###Launcher", NULL, szSteamCommand, MAX_PATH, ImVec2(0, 0), ImGuiInputTextFlags_ReadOnly);
     ImGui::PopStyleColor    ( );
     ImGui::TreePop          ( );
 
@@ -206,7 +206,7 @@ SKIF_UI_Tab_DrawAbout (void)
       ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info),
                           "3 ");
     ImGui::SameLine         ( );
-    ImGui::TextWrapped      ("Launch the game as usual through Steam.");
+    ImGui::TextWrapped      (u8"通过Steam照常启动游戏.");
     ImGui::EndGroup         ( );
   }
 
@@ -217,7 +217,7 @@ SKIF_UI_Tab_DrawAbout (void)
       ImColor::HSV (0.11F,   1.F, 1.F),
       ICON_FA_EXCLAMATION_TRIANGLE " ");
     ImGui::SameLine         ( );
-    ImGui::TextWrapped      ("Your system is not set up to use this install of Special K to quickly launch injection through Steam.");
+    ImGui::TextWrapped      (u8"您的系统未设置为使用此安装的Special K通过Steam快速启动注入.");
 
     SKIF_ImGui_Spacing      ( );
     
@@ -225,7 +225,7 @@ SKIF_UI_Tab_DrawAbout (void)
     ImGui::SameLine         ( );
     
     ImGui::PushStyleColor   (ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption));
-    if (ImGui::Button ("  Set this install as default  "))
+    if (ImGui::Button (u8"  将此安装设置为默认安装  "))
       SKIF_RegisterApp (true);
     ImGui::PopStyleColor    ( );
     
@@ -244,18 +244,18 @@ SKIF_UI_Tab_DrawAbout (void)
   ImGui::SameLine         ( );
   ImGui::TextColored      (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-    "Compatibility Options:");
+    u8"兼容性选项:");
 
   SKIF_ImGui_Spacing      ( );
 
-  ImGui::Text             ("Hold down ");
+  ImGui::Text             (u8"Hold down ");
   ImGui::SameLine         ( );
   ImGui::TextColored      (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
     ICON_FA_KEYBOARD " CTRL + Shift");
   ImGui::SameLine         ( );
-  ImGui::Text             ("when starting a game to access compatibility options");
-  ImGui::Text             ("or quickly perform a local install of the appropriate wrapper DLL for the game.");
+  ImGui::Text             (u8"启动游戏以访问兼容性选项时");
+  ImGui::Text             (u8"或者快速执行游戏的适当包装DLL的本地安装.");
 
 
   float pushColumnSeparator =
@@ -270,19 +270,19 @@ SKIF_UI_Tab_DrawAbout (void)
   ImGui::NextColumn       ( ); // Next Column
   ImGui::TextColored      (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-      "About the Injection Frontend (SKIF):"    );
+      "关于注射前端 (SKIF):"    );
 
   SKIF_ImGui_Spacing      ( );
 
-  ImGui::TextWrapped      ("You are looking at the Special K Injection Frontend, commonly referred to as \"SKIF\".\n\n"
-                           "The injection frontend is used to manage the global injection service which injects Special K into games as they start, and even games that are already running!\n\n"
-                           "The frontend also provides convenient shortcuts to special locations, including config and log files, cloud saves, and external resources like PCGamingWiki and SteamDB.");
+  ImGui::TextWrapped      (u8"您看到的是Special K 注入前端，通常被称为 \"SKIF\".\n\n"
+                           u8"注入前端用于管理全局注入服务，该服务在游戏开始时，甚至在已经运行的游戏中注入Special K!\n\n"
+                           u8"前端还提供了到特殊位置的方便快捷方式，包括配置和日志文件、云存储以及PCGamingWiki和SteamDB等外部资源.");
 
   ImGui::SetCursorPosY    (fY1);
 
   ImGui::TextColored (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-                  "Multiplayer games:");
+                  u8"多人游戏:");
 
   SKIF_ImGui_Spacing      ( );
 
@@ -293,11 +293,11 @@ SKIF_UI_Tab_DrawAbout (void)
     ImColor::HSV (0.11F,   1.F, 1.F),
     ICON_FA_EXCLAMATION_TRIANGLE " ");
   ImGui::SameLine         (0.0f, 6.0f);
-  ImGui::Text             ("Do not use Special K in multiplayer games!");
+  ImGui::Text             (u8"不要在多人游戏中使用特殊K!");
   ImGui::EndGroup         ( );
 
   SKIF_ImGui_SetHoverTip (
-    "In particular games where anti-cheat\nprotection might be present."
+    u8"在可能存在反作弊保护的特定游戏中."
   );
 
   ImGui::BeginGroup       ( );
@@ -307,7 +307,7 @@ SKIF_UI_Tab_DrawAbout (void)
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info),
       ICON_FA_EXTERNAL_LINK_ALT " "      );
   ImGui::SameLine         ( );
-  if (ImGui::Selectable   ("More on the wiki"))
+  if (ImGui::Selectable   (u8"有关wiki的更多信息"))
     SKIF_Util_OpenURI     (L"https://wiki.special-k.info/en/SpecialK/Global#multiplayer-games");
   SKIF_ImGui_SetMouseCursorHand ();
   SKIF_ImGui_SetHoverText ( "https://wiki.special-k.info/en/SpecialK/Global#multiplayer-games");
@@ -321,7 +321,7 @@ SKIF_UI_Tab_DrawAbout (void)
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info),
     ICON_FA_EXCLAMATION_CIRCLE " ");
   ImGui::SameLine         ( );
-  ImGui::Text             ("The service injects Special K into most user processes.");
+  ImGui::Text             (u8"The service injects Special K into most user processes.");
   ImGui::EndGroup         ( );
 
   SKIF_ImGui_SetHoverTip (
@@ -333,7 +333,7 @@ SKIF_UI_Tab_DrawAbout (void)
 
   ImGui::TextColored (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-      "More on how to inject Special K:"
+      u8"关于如何注入Special K的更多信息:"
   );
 
   SKIF_ImGui_Spacing      ( );
@@ -346,7 +346,7 @@ SKIF_UI_Tab_DrawAbout (void)
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info),
       ICON_FA_EXTERNAL_LINK_ALT " "      );
   ImGui::SameLine         ( );
-  if (ImGui::Selectable   ("Global (system-wide)"))
+  if (ImGui::Selectable   (u8"全局 (system-wide)"))
     SKIF_Util_OpenURI     (L"https://wiki.special-k.info/SpecialK/Global");
   SKIF_ImGui_SetMouseCursorHand ();
   SKIF_ImGui_SetHoverText ( "https://wiki.special-k.info/SpecialK/Global");
@@ -359,7 +359,7 @@ SKIF_UI_Tab_DrawAbout (void)
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_Info),
     ICON_FA_EXTERNAL_LINK_ALT " "      );
   ImGui::SameLine         ( );
-  if (ImGui::Selectable   ("Local (game-specific)"))
+  if (ImGui::Selectable   (u8"本地 (game-specific)"))
     SKIF_Util_OpenURI     (L"https://wiki.special-k.info/SpecialK/Local");
   SKIF_ImGui_SetMouseCursorHand ();
   SKIF_ImGui_SetHoverText ( "https://wiki.special-k.info/SpecialK/Local");
@@ -369,7 +369,7 @@ SKIF_UI_Tab_DrawAbout (void)
 
   ImGui::TextColored      (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-      "Online resources:"   );
+      u8"联机资源:"   );
   SKIF_ImGui_Spacing      ( );
 
   ImGui::BeginGroup       ( );
@@ -380,7 +380,7 @@ SKIF_UI_Tab_DrawAbout (void)
       ICON_FA_BOOK " "   );
   ImGui::SameLine         ( );
 
-  if (ImGui::Selectable   ("Wiki"))
+  if (ImGui::Selectable   (u8"Wiki"))
     SKIF_Util_OpenURI     (L"https://wiki.special-k.info/");
 
   SKIF_ImGui_SetMouseCursorHand ();
@@ -396,7 +396,7 @@ SKIF_UI_Tab_DrawAbout (void)
       ICON_FA_DISCORD " "   );
   ImGui::SameLine         ( );
 
-  if (ImGui::Selectable   ("Discord"))
+  if (ImGui::Selectable   (u8"Discord"))
     SKIF_Util_OpenURI     (L"https://discord.gg/specialk");
 
   SKIF_ImGui_SetMouseCursorHand ();
@@ -412,7 +412,7 @@ SKIF_UI_Tab_DrawAbout (void)
       ICON_FA_DISCOURSE " " );
   ImGui::SameLine         ( );
 
-  if (ImGui::Selectable   ("Forum"))
+  if (ImGui::Selectable   (u8"Forum"))
     SKIF_Util_OpenURI     (L"https://discourse.differentk.fyi/");
 
   SKIF_ImGui_SetMouseCursorHand ();
@@ -426,7 +426,7 @@ SKIF_UI_Tab_DrawAbout (void)
     ImColor (249, 104, 84),
       ICON_FA_PATREON " "   );
   ImGui::SameLine         ( );
-  if (ImGui::Selectable   ("Patreon"))
+  if (ImGui::Selectable   (u8"Patreon"))
     SKIF_Util_OpenURI     (L"https://www.patreon.com/Kaldaien");
 
   SKIF_ImGui_SetMouseCursorHand ();
@@ -440,7 +440,7 @@ SKIF_UI_Tab_DrawAbout (void)
     (_registry.iStyle == 2) ? ImColor (0, 0, 0) : ImColor (255, 255, 255), // ImColor (226, 67, 40)
       ICON_FA_GITHUB " "   );
   ImGui::SameLine         ( );
-  if (ImGui::Selectable   ("GitHub"))
+  if (ImGui::Selectable   (u8"GitHub"))
     SKIF_Util_OpenURI     (L"https://github.com/SpecialKO");
 
   SKIF_ImGui_SetMouseCursorHand ();
@@ -455,12 +455,26 @@ SKIF_UI_Tab_DrawAbout (void)
     (_registry.iStyle == 2) ? ImColor (0, 0, 0) : ImColor (255, 255, 255), // ImColor (226, 67, 40)
       ICON_FA_FILE_CONTRACT " ");
   ImGui::SameLine         (0.0f, 10.0f);
-  if (ImGui::Selectable   ("Privacy Policy"))
+  if (ImGui::Selectable   (u8"Privacy Policy"))
     SKIF_Util_OpenURI     (L"https://wiki.special-k.info/Privacy");
 
   SKIF_ImGui_SetMouseCursorHand ();
   SKIF_ImGui_SetHoverText ( "https://wiki.special-k.info/Privacy");
   ImGui::EndGroup         ( );
+
+  ImGui::BeginGroup();
+  ImGui::Spacing();
+  ImGui::SameLine();
+  ImGui::TextColored(
+    (_registry.iStyle == 2) ? ImColor(0, 0, 0) : ImColor(255, 255, 255), // ImColor (226, 67, 40)
+    ICON_FA_GITHUB " ");
+  ImGui::SameLine();
+  if (ImGui::Selectable(u8"Chinese Localization GitHub"))
+    SKIF_Util_OpenURI(L"https://github.com/Gktwo/SpecialK");
+
+  SKIF_ImGui_SetMouseCursorHand();
+  SKIF_ImGui_SetHoverText("https://github.com/Gktwo/SpecialK");
+  ImGui::EndGroup();
 
   ImGui::SetCursorPosY    (fY4);
     
@@ -474,7 +488,7 @@ SKIF_UI_Tab_DrawAbout (void)
 
   ImGui::TextColored (
     ImGui::GetStyleColorVec4(ImGuiCol_SKIF_TextCaption),
-      "Components:"
+      "组成部分:"
   );
     
   ImGui::PushStyleColor   (
