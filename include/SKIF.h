@@ -22,8 +22,6 @@
 
 #pragma once
 
-#include "../resource.h"
-
 #include <combaseapi.h>
 #include <comdef.h>
 #include <atlbase.h>
@@ -39,110 +37,40 @@
 #include "plog/Initializers/RollingFileInitializer.h"
 #include "plog/Appenders/ConsoleAppender.h"
 
-#include <injection.h>
+// Constants - Timers / Window Messages / HotKeys / Windows
 
-class SK_AutoCOMInit
-{
-public:
-  SK_AutoCOMInit (DWORD dwCoInit = COINIT_MULTITHREADED) :
-           init_flags_ (dwCoInit)
-  {
-    //if (_assert_not_dllmain ())
-    {
-      const HRESULT hr =
-        CoInitializeEx (nullptr, init_flags_);
+const     UINT_PTR       cIDT_REFRESH_PENDING   =             1338;
+const     UINT_PTR        IDT_REFRESH_GAMES     =             1340;
+const     UINT_PTR        IDT_REFRESH_TOOLTIP   =             1341;
+const     UINT_PTR        IDT_REFRESH_UPDATER   =             1342;
+const     UINT_PTR        IDT_REFRESH_NOTIFY    =             1343;
 
-      if (SUCCEEDED (hr))
-        success_ = true;
-      else
-        init_flags_ = ~init_flags_;
-    }
-  }
+constexpr UINT           WM_SKIF_MINIMIZE       = WM_USER +  0x512;
+constexpr UINT           WM_SKIF_RESTORE        = WM_USER +  0x513;
+constexpr UINT           WM_SKIF_START          = WM_USER + 0x1024;
+constexpr UINT           WM_SKIF_TEMPSTART      = WM_USER + 0x1025;
+constexpr UINT           WM_SKIF_TEMPSTARTEXIT  = WM_USER + 0x1026;
+constexpr UINT           WM_SKIF_LAUNCHER       = WM_USER + 0x1027;
+constexpr UINT           WM_SKIF_REFRESHGAMES   = WM_USER + 0x1028;
+constexpr UINT           WM_SKIF_STOP           = WM_USER + 0x2048;
+constexpr UINT           WM_SKIF_GAMEPAD        = WM_USER + 0x2049;
+constexpr UINT           WM_SKIF_COVER          = WM_USER + 0x2050;
+constexpr UINT           WM_SKIF_UPDATER        = WM_USER + 0x2051;
 
-  ~SK_AutoCOMInit (void) noexcept
-  {
-    if (success_)
-      CoUninitialize ();
-  }
+constexpr  int           SKIF_HotKey_HDR        = 1337; // Win + Ctrl + Shift + H
+constexpr  int           SKIF_HotKey_SVC        = 1338; // Win + Ctrl + Shift + Insert
 
-  bool  isInit       (void) noexcept { return success_;    }
-  DWORD getInitFlags (void) noexcept { return init_flags_; }
+constexpr const  char*   SKIF_LOG_SEPARATOR     = "----------------------------";
+constexpr const wchar_t* SKIF_WindowClass       = L"SKIF_RootWindow";
+constexpr const wchar_t* SKIF_NotifyIcoClass    = L"SKIF_NotificationIcon";
 
-protected:
-  //static bool _assert_not_dllmain (void);
+// Enums
 
-private:
-  DWORD init_flags_ = COINIT_MULTITHREADED;
-  bool  success_    = false;
+enum PopupState {
+  PopupState_Closed,
+  PopupState_Open,
+  PopupState_Opened
 };
-
-struct SKIF_UpdateCheckResults {
-  std::wstring version;
-  std::wstring filename;
-  std::wstring description;
-  std::wstring releasenotes;
-  std::string  history;
-} extern;
-
-extern HMODULE hModSKIF;
-extern HMODULE hModSpecialK;
-std::string SKIF_GetPatrons        (void);
-void        SKIF_Initialize        (void);
-
-extern float SKIF_ImGui_GlobalDPIScale;
-extern float SKIF_ImGui_GlobalDPIScale_Last;
-
-extern std::string SKIF_StatusBarText;
-extern std::string SKIF_StatusBarHelp;
-extern HWND        SKIF_hWnd;
-extern HWND        SKIF_ImGui_hWnd;
-extern HWND        SKIF_Notify_hWnd;
-
-extern bool RepopulateGames;
-extern bool RefreshSettingsTab;
-
-void SKIF_UI_DrawPlatformStatus    (void);
-void SKIF_UI_DrawComponentVersion  (void);
-
-extern float fAspect;
-extern float fBottomDist;
-
-const UINT_PTR IDT_REFRESH_ONDEMAND = 1337;
-const UINT_PTR IDT_REFRESH_PENDING  = 1338;
-const UINT_PTR IDT_REFRESH_GAMES    = 1340;
-const UINT_PTR IDT_REFRESH_TOOLTIP  = 1341;
-const UINT_PTR IDT_REFRESH_UPDATER  = 1342;
-
-constexpr UINT WM_SKIF_START         = WM_USER + 0x1024;
-constexpr UINT WM_SKIF_TEMPSTART     = WM_USER + 0x1025;
-constexpr UINT WM_SKIF_LAUNCHER      = WM_USER + 0x1026;
-constexpr UINT WM_SKIF_REFRESHGAMES  = WM_USER + 0x1027;
-constexpr UINT WM_SKIF_STOP          = WM_USER + 0x2048;
-constexpr UINT WM_SKIF_GAMEPAD       = WM_USER + 0x2049;
-constexpr UINT WM_SKIF_COVER         = WM_USER + 0x2050;
-constexpr UINT WM_SKIF_RESTORE       = WM_USER +  0x513;
-constexpr UINT WM_SKIF_MINIMIZE      = WM_USER +  0x512;
-
-constexpr const wchar_t* SKIF_WindowClass =
-             L"SK_Injection_Frontend";
-
-// This is used in conjunction with _registry.bMinimizeOnGameLaunch to suppress the "Please start game" notification
-extern bool SKIF_bSuppressServiceNotification;
-
-
-enum class PopupState {
-  Closed,
-  Open,
-  Opened
-};
-
-extern PopupState IconMenu;
-extern PopupState ServiceMenu;
-
-extern PopupState AddGamePopup;
-extern PopupState RemoveGamePopup;
-extern PopupState ModifyGamePopup;
-extern PopupState ConfirmPopup;
 
 enum UITab {
   UITab_None,
@@ -154,7 +82,58 @@ enum UITab {
   UITab_COUNT      // Total number of elements in enum (technically against Microsoft's enum design guidelines, but whatever)
 };
 
-extern UITab SKIF_Tab_Selected;
-extern UITab SKIF_Tab_ChangeTo;
+enum UIMode {
+  UIMode_Normal,
+  UIMode_VRR_Compatibility,
+  UIMode_Safe_Mode,
+  UIMode_COUNT     // Total number of elements in enum (technically against Microsoft's enum design guidelines, but whatever)
+};
+
+// Structs
+
+struct SKIF_Signals { // Used for command line arguments
+  BOOL Start                = FALSE;
+  BOOL Temporary            = FALSE;
+  BOOL Stop                 = FALSE;
+  BOOL Quit                 = FALSE;
+  BOOL Minimize             = FALSE;
+//BOOL Restore              =  TRUE; // Only executed once
+  BOOL AddSKIFGame          = FALSE;
+  BOOL Launcher             = FALSE;
+
+  // Helper variables
+  HWND _RunningInstance     = NULL;
+  BOOL _ElevatedService     = FALSE;
+  std::wstring _GamePath    = L"";
+  std::wstring _GameArgs    = L"";
+  std::wstring _GameWorkDir = L"";
+};
+
+// External declarations
+
+extern PopupState  ServiceMenu;       // Library / Service Mode: used to show an options menu for the service when right clicking
+extern PopupState  AddGamePopup;      // Library: show an  add  custom game prompt
+extern PopupState  RemoveGamePopup;   // Library: show a remove custom game prompt
+extern PopupState  ModifyGamePopup;   // Library: show a modify custom game prompt
+extern PopupState  ConfirmPopup;      // Library: show a confirm prompt with text set through confirmPopupText
+extern PopupState  UpdatePromptPopup; // App Mode: show an update prompt
+extern PopupState  HistoryPopup;      // Monitor / About: show a changelog popup
+
+extern UITab       SKIF_Tab_Selected; // Current selected tab
+extern UITab       SKIF_Tab_ChangeTo; // Tab we want to change to
 
 extern std::pair<UITab, std::vector<HANDLE>> vWatchHandles[UITab_COUNT];
+
+extern HMODULE     hModSpecialK;     // Monitor: Used to dynamically load and unload the Special K DLL file when switching back and forth to the tab
+extern HWND        SKIF_ImGui_hWnd;  // Main ImGui platform window (aka the main window of SKIF)
+extern HWND        SKIF_Notify_hWnd; // Notification area icon "window" that also doubles as a handler for the stuff previously tied to the now removed SKIF_hWnd 0x0 hidden window
+
+extern float       SKIF_ImGui_GlobalDPIScale;
+extern float       SKIF_ImGui_GlobalDPIScale_Last;
+extern float       fBottomDist;
+
+extern std::string SKIF_StatusBarText;
+extern std::string SKIF_StatusBarHelp;
+
+extern bool        RepopulateGames;
+extern bool        RefreshSettingsTab;

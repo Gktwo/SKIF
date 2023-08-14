@@ -23,8 +23,9 @@
 #include <stores/Steam/vdf.h>
 #include <stores/Steam/apps_list.h>
 
-#include <fsutil.h>
+#include <utility/fsutil.h>
 #include <regex>
+#include <stores/Steam/steam_library.h>
 
 const int SKIF_STEAM_APPID = 1157970;
 
@@ -222,6 +223,8 @@ appinfo_s::getNextApp (void)
 appinfo_s*
 skValveDataFile::getAppInfo ( uint32_t     appid )
 {
+  static SKIF_CommonPathsCache& _path_cache = SKIF_CommonPathsCache::GetInstance ( );
+
   extern bool SKIF_STEAM_OWNER;
 
   // Skip call if it concerns someone whom does not have SKIF installed on Steam
@@ -241,7 +244,7 @@ skValveDataFile::getAppInfo ( uint32_t     appid )
 
         for (auto& app : apps)
         {
-          if (app.second.id == appid)
+          if (app.second.id == appid && app.second.store == "Steam")
           {
             pAppRecord = &app.second;
             break;
@@ -555,17 +558,18 @@ skValveDataFile::getAppInfo ( uint32_t     appid )
         {
           //if (_used_launches.emplace (launch.blacklist_file).second)
           //{
-            pAppRecord->launch_configs [launch.id] =
-                                        launch;
+            pAppRecord->launch_configs
+              [static_cast<int> (pAppRecord->launch_configs.size())] =
+                                             launch;
           //}
         }
 
         std::map <std::string, std::wstring> roots = {
-          { "WinMyDocuments",        path_cache.my_documents.path          },
-          { "WinAppDataLocal",       path_cache.app_data_local.path        },
-          { "WinAppDataLocalLow",    path_cache.app_data_local_low.path    },
-          { "WinAppDataRoaming",     path_cache.app_data_roaming.path      },
-          { "WinSavedGames",         path_cache.win_saved_games.path       },
+          { "WinMyDocuments",        _path_cache.my_documents.path          },
+          { "WinAppDataLocal",       _path_cache.app_data_local.path        },
+          { "WinAppDataLocalLow",    _path_cache.app_data_local_low.path    },
+          { "WinAppDataRoaming",     _path_cache.app_data_roaming.path      },
+          { "WinSavedGames",         _path_cache.win_saved_games.path       },
           { "App Install Directory", pAppRecord->install_dir               },
           { "gameinstall",           pAppRecord->install_dir               },
           { "SteamCloudDocuments",   L"<Steam Cloud Docs>"                 }
@@ -575,7 +579,7 @@ skValveDataFile::getAppInfo ( uint32_t     appid )
 
         std::wstring cloud_path       =
           SK_FormatStringW (      LR"(%ws\userdata\%ws\%d\)",
-              path_cache.steam_install, account_id_str.c_str (),
+              _path_cache.steam_install, account_id_str.c_str (),
                                              appid );
 
         roots ["SteamCloudDocuments"] =

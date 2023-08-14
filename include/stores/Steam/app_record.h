@@ -23,7 +23,7 @@
 #pragma once
 
 #include <stores/generic_library.h>
-#include <stores/Steam/steam_library.h>
+//#include <stores/Steam/steam_library.h>
 
 #include <map>
 #include <string>
@@ -31,9 +31,19 @@
 #include <assert.h>
 #include <Shlwapi.h>
 
-#include <install_utils.h>
+#include <utility/install_utils.h>
 
-#include <sk_utility/utility.h>
+#include <utility/sk_utility.h>
+
+#include <Windows.h>
+
+#include <stores/Steam/app_record.h>
+#include <utility/utility.h>
+
+//#include "steam/steam_api.h"
+#include <utility/vfs.h>
+
+#include <vector>
 
 //
 // TODO: Get this specialization stuff the hell out of here...
@@ -84,6 +94,7 @@ struct app_record_s {
   std::wstring install_dir;
   std::string  type  =  "Game";  // TODO: Proper enum
   std::string  store = "Steam";  // maybe enum?
+  std::string  ImGuiPushID = "";
   std::string  ImGuiLabelAndID = "";
   std::string  EGS_CatalogNamespace = "";
   std::string  EGS_CatalogItemId = "";
@@ -110,7 +121,9 @@ struct app_record_s {
 
   struct names_s {
     std::string all_upper;
+    std::string all_upper_alnum;
     std::string normal;
+    size_t      pre_stripped = 0;
   } names;
 
   struct tex_registry_s {

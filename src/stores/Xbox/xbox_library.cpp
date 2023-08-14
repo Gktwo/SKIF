@@ -4,13 +4,11 @@
 #include <wtypes.h>
 #include <fstream>
 #include <filesystem>
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 #include <SKIF.h>
-#include <SKIF_utility.h>
+#include <utility/utility.h>
 
-#include <registry.h>
-
-static SKIF_RegistrySettings& _registry = SKIF_RegistrySettings::GetInstance( );
+#include <utility/registry.h>
 
 /*
 Xbox / MS Store games shared registry struture
@@ -28,6 +26,8 @@ To get more information about the game, parsing the AppXManifest.xml in the root
 void
 SKIF_Xbox_GetInstalledAppIDs (std::vector <std::pair < std::string, app_record_s > > *apps)
 {
+  static SKIF_CommonPathsCache& _path_cache = SKIF_CommonPathsCache::GetInstance ( );
+
   PLOG_INFO << "Detecting Xbox games...";
 
   HKEY  hKey, hSubKey;
@@ -39,16 +39,17 @@ SKIF_Xbox_GetInstalledAppIDs (std::vector <std::pair < std::string, app_record_s
   std::vector<std::pair<int, std::wstring>> gamingRoots;
 
   /* Load Xbox titles from registry */
-  if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\GamingServices\PackageRepository\Root\)", 0, KEY_READ, &hKey) == ERROR_SUCCESS)
+  if (RegOpenKeyExW (HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\GamingServices\PackageRepository\Root\)", 0, KEY_READ, &hKey) == ERROR_SUCCESS)
   {
-    if (RegQueryInfoKeyW(hKey, NULL, NULL, NULL, &dwResult, NULL, NULL, NULL, NULL, NULL, NULL, NULL) == ERROR_SUCCESS)
+    if (RegQueryInfoKeyW (hKey, NULL, NULL, NULL, &dwIndex, NULL, NULL, NULL, NULL, NULL, NULL, NULL) == ERROR_SUCCESS)
     {
-      do
+      while (dwIndex > 0)
       {
         // Enumerate Root -> GUIDs
+        dwIndex--;
 
         dwSize   = sizeof(szSubKeyGUID) / sizeof(WCHAR);
-        dwResult = RegEnumKeyExW(hKey, dwIndex, szSubKeyGUID, &dwSize, NULL, NULL, NULL, NULL);
+        dwResult = RegEnumKeyExW (hKey, dwIndex, szSubKeyGUID, &dwSize, NULL, NULL, NULL, NULL);
 
         if (dwResult == ERROR_NO_MORE_ITEMS)
           break;
@@ -60,7 +61,7 @@ SKIF_Xbox_GetInstalledAppIDs (std::vector <std::pair < std::string, app_record_s
           if (RegOpenKeyExW (HKEY_LOCAL_MACHINE, (LR"(SOFTWARE\Microsoft\GamingServices\PackageRepository\Root\)" + std::wstring(szSubKeyGUID)).c_str(), 0, KEY_READ, &hSubKey) == ERROR_SUCCESS)
           {
             dwSize   = sizeof(szSubKey) / sizeof(WCHAR);
-            dwResult = RegEnumKeyExW(hSubKey, 0, szSubKey, &dwSize, NULL, NULL, NULL, NULL);
+            dwResult = RegEnumKeyExW (hSubKey, 0, szSubKey, &dwSize, NULL, NULL, NULL, NULL);
 
             if (dwResult == ERROR_NO_MORE_ITEMS)
               break;
@@ -68,12 +69,12 @@ SKIF_Xbox_GetInstalledAppIDs (std::vector <std::pair < std::string, app_record_s
             if (dwResult == ERROR_SUCCESS)
             {
               dwSize = sizeof(szData) / sizeof(WCHAR);
-              if (RegGetValueW(hSubKey, szSubKey, L"Package", RRF_RT_REG_SZ, NULL, &szData, &dwSize) == ERROR_SUCCESS)
+              if (RegGetValueW (hSubKey, szSubKey, L"Package", RRF_RT_REG_SZ, NULL, &szData, &dwSize) == ERROR_SUCCESS)
               {
                 PLOG_VERBOSE << "Package: " << szData;
 
                 dwSize = sizeof(szData) / sizeof(WCHAR);
-                if (RegGetValueW(hSubKey, szSubKey, L"Root", RRF_RT_REG_SZ, NULL, &szData, &dwSize) == ERROR_SUCCESS)
+                if (RegGetValueW (hSubKey, szSubKey, L"Root", RRF_RT_REG_SZ, NULL, &szData, &dwSize) == ERROR_SUCCESS)
                 {
                   pugi::xml_document manifest, config;
                   app_record_s record (AppID);
@@ -148,7 +149,7 @@ SKIF_Xbox_GetInstalledAppIDs (std::vector <std::pair < std::string, app_record_s
 
                     // If we have found a partial path, construct the assumed full path
                     if (! virtualFolder.empty())
-                      virtualFolder = SK_FormatStringW(LR"(%ws\%ws\Content\)", virtualFolder.c_str(), SK_UTF8ToWideChar(SKIF_Util_ReplaceInvalidFilenameChars(record.names.normal, '-')).c_str()); //LR"(\)" + SK_UTF8ToWideChar(SKIF_ReplaceInvalidFilenameChars(record.names.normal, '-')) + LR"(\Content\)";
+                      virtualFolder = SK_FormatStringW (LR"(%ws\%ws\Content\)", virtualFolder.c_str(), SK_UTF8ToWideChar (SKIF_Util_ReplaceInvalidFilenameChars (record.names.normal, '-')).c_str()); //LR"(\)" + SK_UTF8ToWideChar(SKIF_ReplaceInvalidFilenameChars(record.names.normal, '-')) + LR"(\Content\)";
 
                     // Ensure that it actually exists before we swap it in!
                     if (PathFileExists(virtualFolder.c_str()))
@@ -163,7 +164,7 @@ SKIF_Xbox_GetInstalledAppIDs (std::vector <std::pair < std::string, app_record_s
                     else
                       record.specialk.injection.injection.bitness = InjectionBitness::ThirtyTwo;
 
-                    std::wstring targetPath = SK_FormatStringW(LR"(%ws\Assets\Xbox\%ws\)", path_cache.specialk_userdata, SK_UTF8ToWideChar(record.Xbox_PackageName).c_str());
+                    std::wstring targetPath = SK_FormatStringW (LR"(%ws\Assets\Xbox\%ws\)", _path_cache.specialk_userdata, SK_UTF8ToWideChar (record.Xbox_PackageName).c_str());
                     std::wstring iconPath   = targetPath + L"icon-original.png";
                     std::wstring coverPath  = targetPath + L"cover-fallback.png";
 
@@ -202,7 +203,7 @@ SKIF_Xbox_GetInstalledAppIDs (std::vector <std::pair < std::string, app_record_s
                         {
                           if (exeCount == 1 || strAppID == exe.attribute("Id").value())
                           {
-                            lc.executable = SK_UTF8ToWideChar(exe.attribute("Name").value());
+                            lc.executable = SK_UTF8ToWideChar (exe.attribute("Name").value());
 
                             size_t pos = lc.executable.rfind(LR"(\)");
                             if (pos != std::wstring::npos)
@@ -219,7 +220,7 @@ SKIF_Xbox_GetInstalledAppIDs (std::vector <std::pair < std::string, app_record_s
                       }
 
                       // Some games (e.g. Quake 2) needs to be launched through the gamelaunchhelper.exe, so retain that value
-                      lc.executable_helper = record.install_dir + L"\\" + SK_UTF8ToWideChar(app.attribute("Executable").value());
+                      lc.executable_helper = record.install_dir + L"\\" + SK_UTF8ToWideChar (app.attribute("Executable").value());
 
                       if (lc.executable.empty())
                         lc.executable = lc.executable_helper;
@@ -256,7 +257,7 @@ SKIF_Xbox_GetInstalledAppIDs (std::vector <std::pair < std::string, app_record_s
 
                       if (!icon)
                       {
-                        std::wstring file = SK_UTF8ToWideChar(app.child("uap:VisualElements").attribute("Square44x44Logo").value());
+                        std::wstring file = SK_UTF8ToWideChar (app.child("uap:VisualElements").attribute("Square44x44Logo").value());
 
                         if (!file.empty())
                         {
@@ -269,7 +270,7 @@ SKIF_Xbox_GetInstalledAppIDs (std::vector <std::pair < std::string, app_record_s
 
                       if (!cover)
                       {
-                        std::wstring file = SK_UTF8ToWideChar(app.child("uap:VisualElements").child("uap:SplashScreen").attribute("Image").value());
+                        std::wstring file = SK_UTF8ToWideChar (app.child("uap:VisualElements").child("uap:SplashScreen").attribute("Image").value());
 
                         if (!file.empty())
                         {
@@ -280,9 +281,6 @@ SKIF_Xbox_GetInstalledAppIDs (std::vector <std::pair < std::string, app_record_s
                         }
                       }
                     }
-
-                    record.names.all_upper  = record.names.normal;
-                    std::for_each(record.names.all_upper.begin(), record.names.all_upper.end(), ::toupper);
 
                     if (record.launch_configs.size() > 0)
                     {
@@ -318,23 +316,23 @@ SKIF_Xbox_GetInstalledAppIDs (std::vector <std::pair < std::string, app_record_s
               }
             }
 
-            RegCloseKey(hSubKey);
+            RegCloseKey (hSubKey);
           }
         }
-
-        dwIndex++;
-
-      } while (1);
+      }
     }
 
-    RegCloseKey(hKey);
+    RegCloseKey (hKey);
   }
 }
 
 void
 SKIF_Xbox_IdentifyAssetNew (std::string PackageName, std::string StoreID)
 {
-  std::wstring targetAssetPath = SK_FormatStringW(LR"(%ws\Assets\Xbox\%ws\)", path_cache.specialk_userdata, SK_UTF8ToWideChar(PackageName).c_str());
+  static SKIF_RegistrySettings& _registry   = SKIF_RegistrySettings::GetInstance ( );
+  static SKIF_CommonPathsCache& _path_cache = SKIF_CommonPathsCache::GetInstance ( );
+
+  std::wstring targetAssetPath = SK_FormatStringW(LR"(%ws\Assets\Xbox\%ws\)", _path_cache.specialk_userdata, SK_UTF8ToWideChar(PackageName).c_str());
 
   std::error_code ec;
   // Create any missing directories

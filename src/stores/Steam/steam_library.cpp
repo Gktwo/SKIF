@@ -22,6 +22,10 @@
 
 #include <stores/steam/steam_library.h>
 #include <fstream>
+#include <utility/registry.h>
+#include <utility/utility.h>
+#include <filesystem>
+#include <stores/Steam/apps_ignore.h>
 
 // {95FF906C-3D28-4463-B558-A4D1E5786767}
 const GUID IID_VFS_SteamUGC =
@@ -167,6 +171,10 @@ SK_VFS_ScanTree ( SK_VirtualFS::vfsNode* pVFSRoot,
   return found;
 }
 
+
+// There's two of these:
+// *   SK_Steam_GetInstalledAppIDs ( ) <- The one below
+// * SKIF_Steam_GetInstalledAppIDs ( )
 std::vector <AppId_t>
 SK_Steam_GetInstalledAppIDs (void)
 {
@@ -219,6 +227,15 @@ SK_Steam_GetInstalledAppIDs (void)
           bInit = false;
     if (! bInit)
     {
+      static SKIF_RegistrySettings& _registry   = SKIF_RegistrySettings::GetInstance ( );
+      
+      // We don't want Steam to draw its overlay on us
+      _registry._LoadedSteamOverlay = true;
+      SetEnvironmentVariable (L"SteamNoOverlayUIDrawing", L"1");
+
+      // Store the current state of the environment variables
+      auto env_str = GetEnvironmentStringsW ( );
+
       static bool bLoaded =
         (LoadLibraryW (L"steam_api64.dll") != nullptr);
 
@@ -246,6 +263,17 @@ SK_Steam_GetInstalledAppIDs (void)
             bInit = true;
           }
         }
+      }
+
+      // Restore the state (clears out any additional Steam set variables)
+      SetEnvironmentStringsW  (env_str);
+      FreeEnvironmentStringsW (env_str);
+
+      // If the DLL file could not be loaded, go back to regular handling
+      if (! bLoaded)
+      {
+        SetEnvironmentVariable (L"SteamNoOverlayUIDrawing", NULL);
+        _registry._LoadedSteamOverlay = false;
       }
     }
   }
@@ -325,7 +353,7 @@ SK_Steam_GetInstalledAppIDs (void)
 std::wstring
 SK_Steam_GetApplicationManifestPath (AppId_t appid)
 {
-  PLOG_VERBOSE << "Steam AppID: " << appid;
+  //PLOG_VERBOSE << "Steam AppID: " << appid;
 
   steam_library_t* steam_lib_paths = nullptr;
   int              steam_libs      = SK_Steam_GetLibraries (&steam_lib_paths);
@@ -338,7 +366,7 @@ SK_Steam_GetApplicationManifestPath (AppId_t appid)
     for (int i = 0; i < steam_libs; i++)
     {
       wchar_t    wszManifest [MAX_PATH + 2] = { };
-      swprintf ( wszManifest,
+      swprintf ( wszManifest, MAX_PATH + 2,
                    LR"(%s\steamapps\appmanifest_%u.acf)",
                (wchar_t *)steam_lib_paths [i],
                             appid );
@@ -365,7 +393,7 @@ SK_Steam_GetApplicationManifestPath (AppId_t appid)
 std::string
 SK_GetManifestContentsForAppID (AppId_t appid)
 {
-  PLOG_VERBOSE << "Steam AppID: " << appid;
+  //PLOG_VERBOSE << "Steam AppID: " << appid;
 
   static AppId_t     manifest_id = 0;
   static std::string manifest;
@@ -391,7 +419,7 @@ SK_GetManifestContentsForAppID (AppId_t appid)
 
   if (hManifest != INVALID_HANDLE_VALUE)
   {
-    PLOG_DEBUG << "Reading " << wszManifest;
+    //PLOG_VERBOSE << "Reading " << wszManifest;
 
     DWORD dwSizeHigh = 0,
           dwRead     = 0,
@@ -576,14 +604,14 @@ SK_Steam_GetLibraries (steam_library_t** ppLibraries)
 std::string
 SK_UseManifestToGetAppName (AppId_t appid)
 {
-  PLOG_VERBOSE << "Steam AppID: " << appid;
+  //PLOG_VERBOSE << "Steam AppID: " << appid;
 
   std::string manifest_data =
     SK_GetManifestContentsForAppID (appid);
 
   if (! manifest_data.empty ())
   {
-    PLOG_DEBUG << "Parsing manifest for AppID: " << appid;
+    //PLOG_VERBOSE << "Parsing manifest for AppID: " << appid;
 
     std::string app_name =
       SK_Steam_KeyValues::getValue (
@@ -602,14 +630,14 @@ SK_UseManifestToGetAppName (AppId_t appid)
 std::string
 SK_UseManifestToGetAppOwner (AppId_t appid)
 {
-  PLOG_VERBOSE << "Steam AppID: " << appid;
+  //PLOG_VERBOSE << "Steam AppID: " << appid;
 
   std::string manifest_data =
     SK_GetManifestContentsForAppID (appid);
 
   if (! manifest_data.empty ())
   {
-    PLOG_DEBUG << "Parsing manifest for AppID: " << appid;
+    //PLOG_VERBOSE << "Parsing manifest for AppID: " << appid;
 
     std::string app_owner =
       SK_Steam_KeyValues::getValue (
@@ -628,14 +656,14 @@ SK_UseManifestToGetAppOwner (AppId_t appid)
 std::wstring
 SK_UseManifestToGetInstallDir (AppId_t appid)
 {
-  PLOG_VERBOSE << "Steam AppID: " << appid;
+  //PLOG_VERBOSE << "Steam AppID: " << appid;
 
   std::string manifest_data =
     SK_GetManifestContentsForAppID (appid);
 
   if (! manifest_data.empty ())
   {
-    PLOG_DEBUG << "Parsing manifest for AppID: " << appid;
+    //PLOG_VERBOSE << "Parsing manifest for AppID: " << appid;
 
     std::wstring app_path =
       SK_Steam_KeyValues::getValueAsUTF16 (
@@ -669,7 +697,7 @@ SK_UseManifestToGetInstallDir (AppId_t appid)
 std::vector <SK_Steam_Depot>
 SK_UseManifestToGetDepots (AppId_t appid)
 {
-  PLOG_VERBOSE << "Steam AppID: " << appid;
+  //PLOG_VERBOSE << "Steam AppID: " << appid;
 
   std::vector <SK_Steam_Depot> depots;
 
@@ -678,7 +706,7 @@ SK_UseManifestToGetDepots (AppId_t appid)
 
   if (! manifest_data.empty ())
   {
-    PLOG_DEBUG << "Parsing manifest for AppID: " << appid;
+    //PLOG_VERBOSE << "Parsing manifest for AppID: " << appid;
 
     std::vector <std::string> values;
     auto                      mounted_depots =
@@ -705,14 +733,14 @@ SK_UseManifestToGetDepots (AppId_t appid)
 ManifestId_t
 SK_UseManifestToGetDepotManifest (AppId_t appid, DepotId_t depot)
 {
-  PLOG_VERBOSE << "Steam AppID: " << appid;
+  //PLOG_VERBOSE << "Steam AppID: " << appid;
 
   std::string manifest_data =
     SK_GetManifestContentsForAppID (appid);
 
   if (! manifest_data.empty ())
   {
-    PLOG_DEBUG << "Parsing manifest for AppID: " << appid;
+    //PLOG_VERBOSE << "Parsing manifest for AppID: " << appid;
 
     return
       atoll (
@@ -727,3 +755,109 @@ SK_UseManifestToGetDepotManifest (AppId_t appid, DepotId_t depot)
 
   return 0;
 }
+
+// Temporarily disabled since this gets triggered on game launch/shutdown as well...
+bool
+SKIF_Steam_isLibrariesSignaled (void)
+{
+  static SKIF_RegistrySettings& _registry   = SKIF_RegistrySettings::GetInstance ( );
+
+#define MAX_STEAM_LIBRARIES 16
+
+  if ( _registry.bDisableSteamLibrary )
+    return false;
+
+  bool isSignaled = false;
+
+  steam_library_t* steam_lib_paths = nullptr;
+  int              steam_libs      = SK_Steam_GetLibraries (&steam_lib_paths);
+  static SKIF_DirectoryWatch steam_libs_watch[MAX_STEAM_LIBRARIES];
+  static int                 steam_libs_files[MAX_STEAM_LIBRARIES] = { 0 };
+  static bool                isInitialized = false;
+
+  if (! steam_lib_paths)
+    return false;
+
+  if (steam_libs != 0)
+  {
+    for (int i = 0; i < steam_libs; i++)
+    {
+      wchar_t    wszManifestDir [MAX_PATH + 2] = { };
+      swprintf ( wszManifestDir, MAX_PATH + 2,
+                    LR"(%s\steamapps)",
+                (wchar_t *)steam_lib_paths [i] );
+
+      bool countFiles = false;
+
+      if (steam_libs_watch[i].isSignaled (wszManifestDir, false))
+        countFiles = true;
+
+      if (countFiles || ! isInitialized)
+      {
+        int prevCount = steam_libs_files[i];
+        int currCount = 0;
+
+        std::error_code dirError;
+        std::filesystem::directory_iterator iterator = 
+          std::filesystem::directory_iterator (wszManifestDir, dirError);
+
+        // Only iterate over the files if the directory exists and is accessible
+        if (! dirError)
+        {
+          for (auto& directory_entry : iterator)
+            if (directory_entry.is_regular_file())
+              currCount++;
+
+          steam_libs_files[i] = currCount;
+        }
+
+        if (countFiles && prevCount != currCount)
+        {
+          isSignaled = true;
+          //OutputDebugString(L"isSignaled 2!\n");
+        }
+      }
+    }
+  }
+
+  isInitialized = true;
+
+  return isSignaled;
+};
+
+
+// There's two of these:
+// *   SK_Steam_GetInstalledAppIDs ( )
+// * SKIF_Steam_GetInstalledAppIDs ( ) <- The one below
+std::vector <std::pair <std::string, app_record_s>>
+SKIF_Steam_GetInstalledAppIDs (void)
+{
+  static SKIF_RegistrySettings& _registry   = SKIF_RegistrySettings::GetInstance ( );
+
+  std::vector <std::pair <std::string, app_record_s>> ret;
+
+  if ( _registry.bDisableSteamLibrary )
+    return ret;
+
+  std::set <uint32_t> unique_apps;
+
+  for ( auto app : SK_Steam_GetInstalledAppIDs ( ))
+  {
+    // Skip Steamworks Common Redists
+    if (app == 228980) continue;
+
+    // Skip IDs related to apps, DLCs, music, and tools (including Special K for now)
+    if (std::find(std::begin(steam_apps_ignorable), std::end(steam_apps_ignorable), app) != std::end(steam_apps_ignorable)) continue;
+
+    if (unique_apps.emplace (app).second)
+    {
+      // Opening the manifests to read the names is a
+      //   lengthy operation, so defer names and icons
+      ret.emplace_back (
+        "Loading...", app
+      );
+    }
+  }
+
+  return ret;
+};

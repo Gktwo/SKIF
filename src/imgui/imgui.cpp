@@ -4469,7 +4469,7 @@ static void ImGui::EndFrameDrawDimmedBackgrounds()
         float rounding = ImMax(window->WindowRounding, g.Style.WindowRounding);
         ImRect bb = window->Rect();
         bb.Expand(g.FontSize);
-        if (bb.Contains(window->Viewport->GetMainRect())) // If a window fits the entire viewport, adjust its highlight inward
+        if (window->Viewport != NULL && bb.Contains(window->Viewport->GetMainRect())) // If a window fits the entire viewport, adjust its highlight inward
         {
             bb.Expand(-g.FontSize - 1.0f);
             rounding = window->WindowRounding;
@@ -6100,8 +6100,8 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
 
         UpdateSelectWindowViewport(window);
         SetCurrentViewport(window, window->Viewport);
-    ////window->FontDpiScale = (g.IO.ConfigFlags & ImGuiConfigFlags_DpiEnableScaleFonts) ? window->Viewport->DpiScale : 1.0f;
-        window->FontDpiScale = (g.IO.ConfigFlags & ImGuiConfigFlags_DpiEnableScaleFonts) ? (window->Viewport->DpiScale <= 2.0f) ? window->Viewport->DpiScale : 2.0f : 1.0f;
+        window->FontDpiScale = (g.IO.ConfigFlags & ImGuiConfigFlags_DpiEnableScaleFonts) ? window->Viewport->DpiScale : 1.0f;
+        //window->FontDpiScale = (g.IO.ConfigFlags & ImGuiConfigFlags_DpiEnableScaleFonts) ? (window->Viewport->DpiScale <= 2.0f) ? window->Viewport->DpiScale : 2.0f : 1.0f;
         SetCurrentWindow(window);
         flags = window->Flags;
 
@@ -6228,8 +6228,8 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
                 // FIXME-DPI
                 //IM_ASSERT(old_viewport->DpiScale == window->Viewport->DpiScale); // FIXME-DPI: Something went wrong
                 SetCurrentViewport(window, window->Viewport);
-          //////window->FontDpiScale = (g.IO.ConfigFlags & ImGuiConfigFlags_DpiEnableScaleFonts) ? window->Viewport->DpiScale : 1.0f;
-                window->FontDpiScale = (g.IO.ConfigFlags & ImGuiConfigFlags_DpiEnableScaleFonts) ? (window->Viewport->DpiScale <= 2.0f) ? window->Viewport->DpiScale : 2.0f : 1.0f;
+                window->FontDpiScale = (g.IO.ConfigFlags & ImGuiConfigFlags_DpiEnableScaleFonts) ? window->Viewport->DpiScale : 1.0f;
+                //window->FontDpiScale = (g.IO.ConfigFlags & ImGuiConfigFlags_DpiEnableScaleFonts) ? (window->Viewport->DpiScale <= 2.0f) ? window->Viewport->DpiScale : 2.0f : 1.0f;
                 SetCurrentWindow(window);
             }
 
@@ -10887,6 +10887,11 @@ ImGuiViewport* ImGui::FindViewportByID(ImGuiID id)
 
 ImGuiViewport* ImGui::FindViewportByPlatformHandle(void* platform_handle)
 {
+    // SKIF: If the platform handle is NULL, return NULL
+    //         as otherwise an unexpected return occurs
+    if (platform_handle == NULL)
+      return NULL;
+
     ImGuiContext& g = *GImGui;
     for (int i = 0; i != g.Viewports.Size; i++)
         if (g.Viewports[i]->PlatformHandle == platform_handle)
@@ -10909,7 +10914,8 @@ void ImGui::SetCurrentViewport(ImGuiWindow* current_window, ImGuiViewportP* view
 
     // Notify platform layer of viewport changes
     // FIXME-DPI: This is only currently used for experimenting with handling of multiple DPI
-    if (g.CurrentViewport && g.PlatformIO.Platform_OnChangedViewport)
+    if (g.CurrentViewport && g.PlatformIO.Platform_OnChangedViewport &&
+        strcmp (current_window->Name, "Debug##Default")) // SKIF: Exclude ImGui debug window
         g.PlatformIO.Platform_OnChangedViewport(g.CurrentViewport);
 }
 
@@ -11571,7 +11577,7 @@ void ImGui::RenderPlatformWindowsDefault(void* platform_render_arg, void* render
 
     if ((viewport->Flags & ImGuiViewportFlags_Minimized) == 0)
     {
-      if (platform_io.Platform_RenderWindow) platform_io.Platform_RenderWindow (viewport, platform_render_arg); // Main rendering (platform side!) (unused)
+      if (platform_io.Platform_RenderWindow) platform_io.Platform_RenderWindow (viewport, platform_render_arg); // Main rendering      (platform side!) (unused)
       if (platform_io.Platform_SwapBuffers)  platform_io.Platform_SwapBuffers  (viewport, platform_render_arg); // Present/SwapBuffers (platform side!) (unused)
 
       if (platform_io.Renderer_RenderWindow) platform_io.Renderer_RenderWindow (viewport, renderer_render_arg); // ImGui_ImplDX11_RenderWindow ( )

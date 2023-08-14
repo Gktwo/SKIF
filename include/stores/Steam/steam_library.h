@@ -24,10 +24,11 @@
 
 #include <Windows.h>
 
-#include "sk_utility/utility.h"
+#include <stores/Steam/app_record.h>
+#include "utility/sk_utility.h"
 
 //#include "steam/steam_api.h"
-#include "vfs.h"
+#include <utility/vfs.h>
 
 #include <vector>
 
@@ -237,7 +238,10 @@ public:
 
       else if (c == '}')
       {
-        search_tree.path.pop_back ();
+        if (! search_tree.path.empty())
+          search_tree.path.pop_back ();
+        else
+          PLOG_ERROR << "Corrupt manifest detected!";
 
         _clear ();
       }
@@ -317,3 +321,9 @@ SK_UseManifestToGetDepots (AppId_t appid);
 
 ManifestId_t
 SK_UseManifestToGetDepotManifest (AppId_t appid, DepotId_t depot);
+
+bool
+SKIF_Steam_isLibrariesSignaled (void);
+
+std::vector <std::pair <std::string, app_record_s>>
+SKIF_Steam_GetInstalledAppIDs (void);

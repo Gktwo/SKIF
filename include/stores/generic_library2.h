@@ -3,15 +3,109 @@
 #include <string>
 #include <wtypes.h>
 #include <set>
-#include <install_utils.h>
 #include <map>
+#include <combaseapi.h>
+#include <atlbase.h>
+#include <d3d11.h>
+#include <vector>
+#include <atomic>
+
 #include "Steam/app_record.h"
+#include <imgui/imgui.h>
+
+enum class LibraryTexture
+{
+  Icon,
+  Cover,
+  Patreon
+};
+
+void
+LoadLibraryTexture (
+        LibraryTexture                      libTexToLoad,
+        uint32_t                            appid,
+        CComPtr <ID3D11ShaderResourceView>& pLibTexSRV,
+        const std::wstring&                 name,
+        ImVec2&                             vCoverUv0,
+        ImVec2&                             vCoverUv1,
+        app_record_s*                       pApp = nullptr);
 
 
 struct app_generic_s {
   //app_generic_s () { };
   //app_generic_s (uint32_t id_) : id (id_) { };
   virtual ~app_generic_s() = default;
+
+  struct sk_install_state_s {
+    struct Injection {
+      enum class Bitness {
+        ThirtyTwo = 0x1,
+        SixtyFour = 0x2,
+        Unknown   = 0x0
+      }            bitness = Bitness::Unknown;
+      enum class EntryPoint {
+        D3D9    = 0x1,
+        D3D11   = 0x2,
+        DXGI    = 0x4,
+        OpenGL  = 0x8,
+        DInput8 = 0x10,
+        CBTHook = 0x20,
+        Unknown = 0x0
+      }            entry_pt = EntryPoint::Unknown;
+      enum class Type {
+        Global  = 0x1,
+        Local   = 0x2,
+        Unknown = 0x0
+      }            type     = Type::Unknown;
+      std::wstring dll_path = L"";
+      std::wstring dll_ver  = L"";
+    } injection;
+
+    struct Config {
+      enum class Type {
+        Centralized = 0x1,
+        Localized   = 0x2,
+        Unknown     = 0x0
+      }            type = Type::Unknown;
+      std::wstring dir  = L"";
+      std::wstring file = L"";
+    } config;
+
+    std::string    localized_name; // UTF-8
+  };
+
+  struct tex_ref_s :
+         CComPtr <ID3D11ShaderResourceView>
+  {
+    D3D11_TEXTURE2D_DESC& getDesc (void)
+    {
+      if (texDesc.Width == 0)
+      {
+        if (p != nullptr)
+        {
+          CComPtr         <ID3D11Texture2D>   pTex;
+          p->GetResource ((ID3D11Resource **)&pTex.p);
+
+          if (pTex.p != nullptr)
+              pTex->GetDesc (&texDesc);
+        }
+      }
+
+      return texDesc;
+    }
+
+    float getAspectRatio (void)
+    {
+      return
+        static_cast <float> (getDesc ().Width) /
+        static_cast <float> (getDesc ().Height);
+    }
+
+    bool isCustom = false;
+
+  private:
+    D3D11_TEXTURE2D_DESC texDesc = { };
+  };
 
   uint32_t     id;
   std::wstring install_dir;
@@ -38,10 +132,8 @@ struct app_generic_s {
   } names;
 
   struct tex_registry_s {
-    d3d11_tex_ref_s icon;
-    d3d11_tex_ref_s cover;
-    bool            isCustomIcon  = false;
-    bool            isCustomCover = false;
+    tex_ref_s icon;
+    tex_ref_s cover;
   } textures;
 
   enum class Store {
@@ -102,12 +194,15 @@ struct app_generic_s {
   std::map <int, launch_config_s>
         launch_configs;
 
-  virtual void launchGame (void) = 0;
-  virtual ID3D11ShaderResourceView* getCover (void) = 0;
-  virtual ID3D11ShaderResourceView* getIcon  (void) = 0;
+  virtual void                      launchGame (void) = 0;
+  virtual ID3D11ShaderResourceView* getCover   (void) = 0;
+  virtual ID3D11ShaderResourceView* getIcon    (void) = 0;
+  virtual bool                      loadCover  (void) = 0;
+  virtual bool                      loadIcon   (void) = 0;
 
-  bool loadCoverAsFile (std::wstring path);
-  bool loadIconAsFile  (std::wstring path);
+protected:
+  bool loadCoverFromFile (std::wstring path);
+  bool loadIconFromFile  (std::wstring path);
 };
 
 // GOG entries
@@ -116,6 +211,8 @@ struct app_gog_s : app_generic_s {
   void                      launchGame (void) override;
   ID3D11ShaderResourceView* getCover   (void) override;
   ID3D11ShaderResourceView* getIcon    (void) override;
+  bool                      loadCover  (void) override;
+  bool                      loadIcon   (void) override;
 };
 
 // Steam entries
@@ -152,6 +249,8 @@ struct app_steam_s : app_generic_s {
   void                      launchGame (void) override;
   ID3D11ShaderResourceView* getCover   (void) override;
   ID3D11ShaderResourceView* getIcon    (void) override;
+  bool                      loadCover  (void) override;
+  bool                      loadIcon   (void) override;
 };
 
 // Xbox entries
@@ -163,4 +262,6 @@ struct app_xbox_s : app_generic_s {
   void                      launchGame (void) override;
   ID3D11ShaderResourceView* getCover   (void) override;
   ID3D11ShaderResourceView* getIcon    (void) override;
+  bool                      loadCover  (void) override;
+  bool                      loadIcon   (void) override;
 };

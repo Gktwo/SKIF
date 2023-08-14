@@ -52,9 +52,7 @@
 #include "plog/Appenders/ConsoleAppender.h"
 
 // Registry Settings
-#include <registry.h>
-
-static SKIF_RegistrySettings& _registry = SKIF_RegistrySettings::GetInstance( );
+#include <utility/registry.h>
 
 // DirectX
 #include <dxgi1_6.h>
@@ -68,6 +66,7 @@ extern bool SKIF_bCanFlip;
 extern bool SKIF_bCanFlipDiscard;
 extern bool SKIF_bCanWaitSwapchain;
 extern bool SKIF_bCanHDR;
+extern bool RecreateSwapChains;
 
 extern std::vector<HANDLE> vSwapchainWaitHandles;
 
@@ -76,6 +75,7 @@ extern bool SKIF_Util_IsWindows8Point1OrGreater   (void);
 extern bool SKIF_Util_IsWindows10OrGreater        (void);
 extern bool SKIF_Util_IsWindowsVersionOrGreater   (DWORD dwMajorVersion, DWORD dwMinorVersion, DWORD dwBuildNumber);
 extern bool SKIF_Util_IsHDRSupported              (bool refresh = false);
+extern bool SKIF_Util_IsHDRActive                 (bool refresh = false);
 extern int  SKIF_Util_GetSDRWhiteLevelForHMONITOR (HMONITOR hMonitor);
 
 // DirectX data
@@ -506,6 +506,8 @@ ImGui_ImplDX11_SetupRenderState ( ImDrawData          *draw_data,
 void
 ImGui_ImplDX11_RenderDrawData (ImDrawData *draw_data)
 {
+  static SKIF_RegistrySettings& _registry = SKIF_RegistrySettings::GetInstance ( );
+
   ///if (! g_pVertexShader)
   ///{
   ///  if (! ImGui_ImplDX11_CreateDeviceObjects ())
@@ -564,9 +566,9 @@ ImGui_ImplDX11_RenderDrawData (ImDrawData *draw_data)
     vtx_resource = { },
     idx_resource = { };
 
-  if (ctx->Map (g_pVB, 0, D3D11_MAP_WRITE_DISCARD, 0, &vtx_resource) != S_OK)
+  if (FAILED (ctx->Map (g_pVB, 0, D3D11_MAP_WRITE_DISCARD, 0, &vtx_resource)))
     return;
-  if (ctx->Map (g_pIB, 0, D3D11_MAP_WRITE_DISCARD, 0, &idx_resource) != S_OK)
+  if (FAILED (ctx->Map (g_pIB, 0, D3D11_MAP_WRITE_DISCARD, 0, &idx_resource)))
     return;
 
   ImDrawVert *vtx_dst =
@@ -597,10 +599,10 @@ ImGui_ImplDX11_RenderDrawData (ImDrawData *draw_data)
     D3D11_MAPPED_SUBRESOURCE
           mapped_resource = { };
 
-    if ( ctx->Map (
+    if ( FAILED (ctx->Map (
            g_pVertexConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD,
                                     0, &mapped_resource
-                  ) != S_OK
+                    ))
        ) return;
 
     VERTEX_CONSTANT_BUFFER *constant_buffer =
@@ -634,6 +636,9 @@ ImGui_ImplDX11_RenderDrawData (ImDrawData *draw_data)
                       draw_data->OwnerViewport->RendererUserData
       );
 
+    if (data == nullptr)
+      return;
+
     if (data->HDR)
     {
       // scRGB HDR 16 bpc
@@ -664,10 +669,10 @@ ImGui_ImplDX11_RenderDrawData (ImDrawData *draw_data)
     }
 
          ctx->Unmap ( g_pVertexConstantBuffer, 0 );
-    if ( ctx->Map   (
+    if ( FAILED (ctx->Map (
            g_pPixelConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD,
                                    0, &mapped_resource
-                    ) != S_OK
+                    ))
        ) return;
 
     if (data->HDR || data->DXGIFormat == DXGI_FORMAT_R16G16B16A16_FLOAT)
@@ -1096,8 +1101,8 @@ ImGui_ImplDX11_InvalidateDeviceObjects (void)
 }
 
 bool
-ImGui_ImplDX11_Init ( ID3D11Device *device,
-               ID3D11DeviceContext *device_context )
+ImGui_ImplDX11_Init ( ID3D11Device        *device,
+                      ID3D11DeviceContext *device_context )
 {
   // Setup back-end capabilities flags
   ImGuiIO &io =
@@ -1122,7 +1127,14 @@ void ImGui_ImplDX11_Shutdown (void)
 {
   ImGui_ImplDX11_ShutdownPlatformInterface ();
   ImGui_ImplDX11_InvalidateDeviceObjects   ();
+  ImGui_ImplDX11_InvalidateDevice          ();
+}
 
+void ImGui_ImplDX11_InvalidateDevice (void)
+{
+  g_pFactory         .Release ( );
+  g_pd3dDevice       .Release ( );
+  g_pd3dDeviceContext.Release ( );
   g_pFactory          = nullptr;
   g_pd3dDevice        = nullptr;
   g_pd3dDeviceContext = nullptr;
@@ -1146,11 +1158,17 @@ void ImGui_ImplDX11_NewFrame (void)
   // Force DXGIFactory and swapchain recreation every time we move monitor
   //   this solves issues with DirectFlip/Independent Flip not engaging
   //   based on the monitor the app launched initially on.
-  extern bool 
-         RecreateSwapChains;
   bool   RecreateFactory =
               ( pFactory2.p != nullptr &&
               ! pFactory2->IsCurrent () );
+
+#if 0
+  if (RecreateSwapChains)
+    OutputDebugString(L"RecreateSwapChains == true\n");
+
+  if (RecreateFactory)
+    OutputDebugString(L"RecreateFactory == true\n");
+#endif
 
   if (RecreateSwapChains || RecreateFactory)
   {   RecreateSwapChains = false;
@@ -1175,7 +1193,7 @@ void ImGui_ImplDX11_NewFrame (void)
       CreateDXGIFactory1 (__uuidof (IDXGIFactory2), (void **)&g_pFactory.p);
     }
 
-    SKIF_bCanHDR = SKIF_Util_IsHDRSupported (true);
+    SKIF_bCanHDR = SKIF_Util_IsHDRActive (true);
     
     PLOG_DEBUG << "Recreating any necessary swapchains and their wait objects...";
     for (int i = 0; i < g.Viewports.Size; i++)
@@ -1191,18 +1209,19 @@ void ImGui_ImplDX11_NewFrame (void)
 static void
 ImGui_ImplDX11_CreateWindow (ImGuiViewport *viewport)
 {
+  static SKIF_RegistrySettings& _registry = SKIF_RegistrySettings::GetInstance ( );
+
   ImGuiViewportDataDx11 *data =
     IM_NEW (ImGuiViewportDataDx11)( );
 
   viewport->RendererUserData = data;
 
+  static DXGI_SWAP_EFFECT prev_swapEffect;
+
   // DXGI WARNING: IDXGIFactory::CreateSwapChain/IDXGISwapChain::ResizeBuffers: The buffer width  inferred from the output window is zero. Taking 8 as a reasonable default instead [ MISCELLANEOUS WARNING #1: ]
   // DXGI WARNING: IDXGIFactory::CreateSwapChain/IDXGISwapChain::ResizeBuffers: The buffer height inferred from the output window is zero. Taking 8 as a reasonable default instead [ MISCELLANEOUS WARNING #2: ]
   if (viewport->Size.x == 0.0f || viewport->Size.y == 0.0f)
-  {
-    //PLOG_WARNING << "DXGI WARNING: IDXGIFactory::CreateSwapChain/IDXGISwapChain::ResizeBuffers: The buffer height/width inferred from the output window is zero.";
     return;
-  }
 
   // PlatformHandleRaw should always be a HWND, whereas PlatformHandle might be a higher-level handle (e.g. GLFWWindow*, SDL_Window*).
   // Some back-end will leave PlatformHandleRaw NULL, in which case we assume PlatformHandle will contain the HWND.
@@ -1215,15 +1234,18 @@ ImGui_ImplDX11_CreateWindow (ImGuiViewport *viewport)
 
   // DXGI ERROR: IDXGIFactory::CreateSwapChain: No target window specified in DXGI_SWAP_CHAIN_DESC, and no window associated with owning factory. [ MISCELLANEOUS ERROR #6: ]
   if (hWnd == nullptr)
-  {
-    //PLOG_ERROR << "DXGI ERROR: IDXGIFactory::CreateSwapChain: No target window specified in DXGI_SWAP_CHAIN_DESC, and no window associated with owning factory.";
     return;
-  }
+  
+  // Occurs when using Ctrl+Tab and closing a standalone popup...
+  // Apparently the viewport sticks around for another frame despite
+  //   the window having been terminated already
+  if (! ::IsWindow (hWnd))
+    return;
 
   IM_ASSERT ( data->SwapChain == nullptr &&
               data->RTView    == nullptr );
 
-  DXGI_FORMAT dxgi_format = DXGI_FORMAT_R8G8B8A8_UNORM; // Fallback
+  DXGI_FORMAT dxgi_format;
 
   // HDR formats
   if (SKIF_bCanHDR && _registry.iHDRMode > 0)
@@ -1238,8 +1260,8 @@ ImGui_ImplDX11_CreateWindow (ImGuiViewport *viewport)
   else {
     if      (_registry.iSDRMode == 2)
       dxgi_format = DXGI_FORMAT_R16G16B16A16_FLOAT; // 16 bpc
-    else if (_registry.iSDRMode == 1)
-      dxgi_format = DXGI_FORMAT_R10G10B10A2_UNORM;  // 10 bpc
+    else if (_registry.iSDRMode == 1 && SKIF_Util_IsWindowsVersionOrGreater (10, 0, 16299))
+      dxgi_format = DXGI_FORMAT_R10G10B10A2_UNORM;  // 10 bpc (apparently only supported for flip on Win10 1709+)
     else
       dxgi_format = DXGI_FORMAT_R8G8B8A8_UNORM;     // 8 bpc;
   }
@@ -1256,7 +1278,7 @@ ImGui_ImplDX11_CreateWindow (ImGuiViewport *viewport)
   swap_desc.SampleDesc.Quality = 0;
 
   // Assume flip by default
-  swap_desc.BufferCount  = 3; // Must be 2-16 for flip model
+  swap_desc.BufferCount  = 3; // Must be 2-16 for flip model // 2 to prevent SKIF from rendering x2 the refresh rate
 
   if (SKIF_bCanWaitSwapchain)
     swap_desc.Flags     |= DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;
@@ -1264,22 +1286,37 @@ ImGui_ImplDX11_CreateWindow (ImGuiViewport *viewport)
   if (SKIF_bCanAllowTearing)
     swap_desc.Flags     |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
-  for (auto  _swapEffect : {DXGI_SWAP_EFFECT_FLIP_DISCARD, DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL, DXGI_SWAP_EFFECT_DISCARD})
+  // Normal (1) / VRR Compatibility Mode (2)
+  if (_registry.iUIMode > 0)
   {
-    swap_desc.SwapEffect = _swapEffect;
-
-    // In case flip failed, fall back to using BitBlt
-    if (_swapEffect == DXGI_SWAP_EFFECT_DISCARD)
+    for (auto  _swapEffect : {DXGI_SWAP_EFFECT_FLIP_DISCARD, DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL, DXGI_SWAP_EFFECT_DISCARD})
     {
-      swap_desc.Format      = DXGI_FORMAT_R8G8B8A8_UNORM;
-      swap_desc.BufferCount = 1;
-      swap_desc.Flags       = 0x0;
-      SKIF_bCanFlip         = false;
-      SKIF_bCanHDR          = false;
-    }
+      swap_desc.SwapEffect = _swapEffect;
 
-    if (SUCCEEDED (g_pFactory->CreateSwapChainForHwnd ( g_pd3dDevice, hWnd, &swap_desc, NULL, NULL,
-                              &data->SwapChain ))) break;
+      // In case flip failed, fall back to using BitBlt
+      if (_swapEffect == DXGI_SWAP_EFFECT_DISCARD)
+      {
+        swap_desc.Format      = DXGI_FORMAT_R8G8B8A8_UNORM;
+        swap_desc.BufferCount = 1;
+        swap_desc.Flags       = 0x0;
+        SKIF_bCanFlip         = false;
+        SKIF_bCanHDR          = false;
+      }
+
+      if (SUCCEEDED (g_pFactory->CreateSwapChainForHwnd ( g_pd3dDevice, hWnd, &swap_desc, NULL, NULL,
+                                &data->SwapChain ))) break;
+    }
+  }
+
+  // Safe Mode (BitBlt Discard)
+  else {
+    //swap_desc.Format      = DXGI_FORMAT_R8G8B8A8_UNORM;
+    swap_desc.SwapEffect  = DXGI_SWAP_EFFECT_DISCARD;
+    swap_desc.BufferCount = 1;
+    swap_desc.Flags       = 0x0;
+
+    g_pFactory->CreateSwapChainForHwnd ( g_pd3dDevice, hWnd, &swap_desc, NULL, NULL,
+               &data->SwapChain );
   }
 
   // Do we have a swapchain?
@@ -1287,114 +1324,115 @@ ImGui_ImplDX11_CreateWindow (ImGuiViewport *viewport)
   {
     data->DXGIFormat = swap_desc.Format;
 
-    // Retrieve the current default adapter.
-    CComPtr   <IDXGIOutput>   pOutput;
-    CComPtr   <IDXGIAdapter1> pAdapter;
-    CComQIPtr <IDXGIFactory2> pFactory1 (g_pFactory);
-    ThrowIfFailed (pFactory1->EnumAdapters1 (0, &pAdapter));
-
-    auto _ComputeIntersectionArea =
-          [&](long ax1, long ay1, long ax2, long ay2,
-              long bx1, long by1, long bx2, long by2) -> int
+    // Are we on a flip based model?
+    if (swap_desc.SwapEffect == DXGI_SWAP_EFFECT_FLIP_DISCARD   ||
+        swap_desc.SwapEffect == DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL )
     {
-      return std::max(0l, std::min(ax2, bx2) - std::max(ax1, bx1)) * std::max(0l, std::min(ay2, by2) - std::max(ay1, by1));
-    };
+      // Retrieve the current default adapter.
+      CComPtr   <IDXGIOutput>   pOutput;
+      CComPtr   <IDXGIAdapter1> pAdapter;
+      CComQIPtr <IDXGIFactory2> pFactory1 (g_pFactory);
+      ThrowIfFailed (pFactory1->EnumAdapters1 (0, &pAdapter));
 
-    UINT i = 0;
-    CComPtr <IDXGIOutput> currentOutput;
-    float bestIntersectArea = -1;
-
-    RECT m_windowBounds;
-    GetWindowRect (hWnd, &m_windowBounds);
-    
-    // Iterate through the DXGI outputs associated with the DXGI adapter,
-    // and find the output whose bounds have the greatest overlap with the
-    // app window (i.e. the output for which the intersection area is the
-    // greatest).
-    while (pAdapter->EnumOutputs(i, &currentOutput) != DXGI_ERROR_NOT_FOUND)
-    {
-      // Get the retangle bounds of the app window
-      int ax1 = m_windowBounds.left;
-      int ay1 = m_windowBounds.top;
-      int ax2 = m_windowBounds.right;
-      int ay2 = m_windowBounds.bottom;
-
-      // Get the rectangle bounds of current output
-      DXGI_OUTPUT_DESC desc;
-      ThrowIfFailed(currentOutput->GetDesc(&desc));
-      RECT r  = desc.DesktopCoordinates;
-      int bx1 = r.left;
-      int by1 = r.top;
-      int bx2 = r.right;
-      int by2 = r.bottom;
-
-      // Compute the intersection
-      int intersectArea = _ComputeIntersectionArea (ax1, ay1, ax2, ay2, bx1, by1, bx2, by2);
-      if (intersectArea > bestIntersectArea)
+      auto _ComputeIntersectionArea =
+            [&](long ax1, long ay1, long ax2, long ay2,
+                long bx1, long by1, long bx2, long by2) -> int
       {
-        pOutput = currentOutput;
-        bestIntersectArea = static_cast<float>(intersectArea);
+        return std::max(0l, std::min(ax2, bx2) - std::max(ax1, bx1)) * std::max(0l, std::min(ay2, by2) - std::max(ay1, by1));
+      };
+
+      UINT i = 0;
+      CComPtr <IDXGIOutput> currentOutput;
+      float bestIntersectArea = -1;
+
+      RECT m_windowBounds;
+      GetWindowRect (hWnd, &m_windowBounds);
+    
+      // Iterate through the DXGI outputs associated with the DXGI adapter,
+      // and find the output whose bounds have the greatest overlap with the
+      // app window (i.e. the output for which the intersection area is the
+      // greatest).
+      while (pAdapter->EnumOutputs(i, &currentOutput) != DXGI_ERROR_NOT_FOUND)
+      {
+        // Get the retangle bounds of the app window
+        int ax1 = m_windowBounds.left;
+        int ay1 = m_windowBounds.top;
+        int ax2 = m_windowBounds.right;
+        int ay2 = m_windowBounds.bottom;
+
+        // Get the rectangle bounds of current output
+        DXGI_OUTPUT_DESC desc;
+        ThrowIfFailed(currentOutput->GetDesc(&desc));
+        RECT r  = desc.DesktopCoordinates;
+        int bx1 = r.left;
+        int by1 = r.top;
+        int bx2 = r.right;
+        int by2 = r.bottom;
+
+        // Compute the intersection
+        int intersectArea = _ComputeIntersectionArea (ax1, ay1, ax2, ay2, bx1, by1, bx2, by2);
+        if (intersectArea > bestIntersectArea)
+        {
+          pOutput = currentOutput;
+          bestIntersectArea = static_cast<float>(intersectArea);
+        }
+
+        i++;
       }
 
-      i++;
-    }
+      // Having determined the output (display) upon which the app is primarily being 
+      // rendered, retrieve the HDR capabilities of that display by checking the color space.
+      CComQIPtr <IDXGIOutput6> pOutput6 (pOutput);
 
-    // Having determined the output (display) upon which the app is primarily being 
-    // rendered, retrieve the HDR capabilities of that display by checking the color space.
-    CComQIPtr <IDXGIOutput6> pOutput6 (pOutput);
+      if (pOutput6 != nullptr)
+      {
+        UINT uiHdrFlags = 0x0;
 
-    if (pOutput6 != nullptr)
-    {
-      UINT uiHdrFlags = 0x0;
-
-      pOutput6->GetDesc1 (&data->DXGIDesc);
+        pOutput6->GetDesc1 (&data->DXGIDesc);
     
-      data->SDRWhiteLevel = SKIF_Util_GetSDRWhiteLevelForHMONITOR (data->DXGIDesc.Monitor);
-
-      OutputDebugString(L"SDR White Level: ");
-      OutputDebugString(std::to_wstring(data->SDRWhiteLevel).c_str());
-      OutputDebugString(L"\n");
+        data->SDRWhiteLevel = SKIF_Util_GetSDRWhiteLevelForHMONITOR (data->DXGIDesc.Monitor);
 
 #pragma region Enable HDR
-      // DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709    - SDR display with no Advanced Color capabilities
-      // DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709    - Standard definition for scRGB, and is usually used with 16 bit integer, 16 bit floating point, or 32 bit floating point color channels.
-      // DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020 - HDR display with all Advanced Color capabilities
+        // DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709    - SDR display with no Advanced Color capabilities
+        // DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709    - Standard definition for scRGB, and is usually used with 16 bit integer, 16 bit floating point, or 32 bit floating point color channels.
+        // DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020 - HDR display with all Advanced Color capabilities
 
-      if (SKIF_bCanHDR          && // Does the system support HDR?
-          _registry.iHDRMode  > 0) // HDR support is not disabled, is it?
-      {
-        DXGI_COLOR_SPACE_TYPE dxgi_cst =
-          (_registry.iHDRMode == 2)
-            ? DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709     // scRGB (FP16 only)
-            : DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020; // HDR10
-      
-        CComQIPtr <IDXGISwapChain3>
-            pSwapChain3 (data->SwapChain);
-
-        if (pSwapChain3 != nullptr)
+        if (SKIF_bCanHDR          && // Does the system support HDR?
+            _registry.iHDRMode  > 0) // HDR support is not disabled, is it?
         {
-          pSwapChain3->CheckColorSpaceSupport (dxgi_cst, &uiHdrFlags);
+          DXGI_COLOR_SPACE_TYPE dxgi_cst =
+            (_registry.iHDRMode == 2)
+              ? DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709     // scRGB (FP16 only)
+              : DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020; // HDR10
+      
+          CComQIPtr <IDXGISwapChain3>
+              pSwapChain3 (data->SwapChain);
 
-          if ( DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT ==
-                ( uiHdrFlags & DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT )
-             )
+          if (pSwapChain3 != nullptr)
           {
-            pOutput6->GetDesc1 (&data->DXGIDesc);
+            pSwapChain3->CheckColorSpaceSupport (dxgi_cst, &uiHdrFlags);
 
-            // Is the display in HDR mode?
-            if (data->DXGIDesc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020)
+            if ( DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT ==
+                  ( uiHdrFlags & DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT )
+               )
             {
-              data->HDR     = true;
-              data->HDRMode = _registry.iHDRMode;
-
-              pSwapChain3->SetColorSpace1 (dxgi_cst);
-
               pOutput6->GetDesc1 (&data->DXGIDesc);
+
+              // Is the display in HDR mode?
+              if (data->DXGIDesc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020)
+              {
+                data->HDR     = true;
+                data->HDRMode = _registry.iHDRMode;
+
+                pSwapChain3->SetColorSpace1 (dxgi_cst);
+
+                pOutput6->GetDesc1 (&data->DXGIDesc);
+              }
             }
           }
         }
-      }
 #pragma endregion
+      }
     }
 
     if (! data->HDR)
@@ -1408,33 +1446,51 @@ ImGui_ImplDX11_CreateWindow (ImGuiViewport *viewport)
                                );
     g_pd3dDevice->CreateRenderTargetView ( pBackBuffer, nullptr,
                            &data->RTView );
-    
-    PLOG_VERBOSE   << "+---------------+-------------------------------------+";
-    PLOG_VERBOSE   << "| Resolution    | " << swap_desc.Width << "x" << swap_desc.Height;
-    PLOG_VERBOSE   << "| Dynamic Range | " << ((data->HDR) ? "HDR" : "SDR");
-    if (     swap_desc.Format == DXGI_FORMAT_R16G16B16A16_FLOAT)
-      PLOG_VERBOSE << "| Format        | DXGI_FORMAT_R16G16B16A16_FLOAT";
-    else if (swap_desc.Format == DXGI_FORMAT_R10G10B10A2_UNORM)
-      PLOG_VERBOSE << "| Format        | DXGI_FORMAT_R10G10B10A2_UNORM";
-    else if (swap_desc.Format == DXGI_FORMAT_R8G8B8A8_UNORM)
-      PLOG_VERBOSE << "| Format        | DXGI_FORMAT_R8G8B8A8_UNORM";
-    else
-      PLOG_VERBOSE << "| Format        | Unexpected format";
-    PLOG_VERBOSE   << "| Buffers       | " << swap_desc.BufferCount;
-    PLOG_VERBOSE   << "| Flags         | " << std::format("{:#x}", swap_desc.Flags);
-    if (     swap_desc.SwapEffect == DXGI_SWAP_EFFECT_FLIP_DISCARD)
-      PLOG_VERBOSE << "| Swap Effect   | DXGI_SWAP_EFFECT_FLIP_DISCARD";
-    else if (swap_desc.SwapEffect == DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL)
-      PLOG_VERBOSE << "| Swap Effect   | DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL";
-    else if (swap_desc.SwapEffect == DXGI_SWAP_EFFECT_DISCARD)
-      PLOG_VERBOSE << "| Swap Effect   | DXGI_SWAP_EFFECT_DISCARD";
-    else if (swap_desc.SwapEffect == DXGI_SWAP_EFFECT_SEQUENTIAL)
-      PLOG_VERBOSE << "| Swap Effect   | DXGI_SWAP_EFFECT_SEQUENTIAL";
-    else 
-      PLOG_VERBOSE << "| Swap Effect   | Unexpected swap effect";
-    PLOG_VERBOSE   << "+---------------+-------------------------------------+";
 
-    if (SKIF_bCanWaitSwapchain)
+    // Only print swapchain info for the main swapchain
+    extern HWND SKIF_ImGui_hWnd;
+    if (hWnd == SKIF_ImGui_hWnd)
+    {
+      static DXGI_SWAP_CHAIN_DESC1 old_data;
+
+      if (old_data.Height     != swap_desc.Height   ||
+          old_data.Flags      != swap_desc.Flags    ||
+          old_data.Format     != swap_desc.Format   ||
+          old_data.SwapEffect != swap_desc.SwapEffect)
+      {
+        old_data = swap_desc;
+
+        PLOG_INFO   << "+-----------------+-------------------------------------+";
+        PLOG_INFO   << "| Resolution      | " << swap_desc.Width << "x" << swap_desc.Height;
+        PLOG_INFO   << "| Dynamic Range   | " << ((data->HDR) ? "HDR" : "SDR");
+        PLOG_INFO   << "| SDR White Level | " << data->SDRWhiteLevel;
+        if (     swap_desc.Format == DXGI_FORMAT_R16G16B16A16_FLOAT)
+          PLOG_INFO << "| Format          | DXGI_FORMAT_R16G16B16A16_FLOAT";
+        else if (swap_desc.Format == DXGI_FORMAT_R10G10B10A2_UNORM)
+          PLOG_INFO << "| Format          | DXGI_FORMAT_R10G10B10A2_UNORM";
+        else if (swap_desc.Format == DXGI_FORMAT_R8G8B8A8_UNORM)
+          PLOG_INFO << "| Format          | DXGI_FORMAT_R8G8B8A8_UNORM";
+        else
+          PLOG_INFO << "| Format          | Unexpected format";
+        PLOG_INFO   << "| Buffers         | " << swap_desc.BufferCount;
+        PLOG_INFO   << "| Flags           | " << std::format("{:#x}", swap_desc.Flags);
+        if (     swap_desc.SwapEffect == DXGI_SWAP_EFFECT_FLIP_DISCARD)
+          PLOG_INFO << "| Swap Effect     | DXGI_SWAP_EFFECT_FLIP_DISCARD";
+        else if (swap_desc.SwapEffect == DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL)
+          PLOG_INFO << "| Swap Effect     | DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL";
+        else if (swap_desc.SwapEffect == DXGI_SWAP_EFFECT_DISCARD)
+          PLOG_INFO << "| Swap Effect     | DXGI_SWAP_EFFECT_DISCARD";
+        else if (swap_desc.SwapEffect == DXGI_SWAP_EFFECT_SEQUENTIAL)
+          PLOG_INFO << "| Swap Effect     | DXGI_SWAP_EFFECT_SEQUENTIAL";
+        else 
+          PLOG_INFO << "| Swap Effect     | Unexpected swap effect";
+        PLOG_INFO   << "+-----------------+-------------------------------------+";
+      }
+    }
+
+    if (SKIF_bCanWaitSwapchain && 
+          (swap_desc.SwapEffect == DXGI_SWAP_EFFECT_FLIP_DISCARD    ||
+           swap_desc.SwapEffect == DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL ))
     {
       CComQIPtr <IDXGISwapChain2>
           pSwapChain2 (data->SwapChain);
@@ -1443,23 +1499,28 @@ ImGui_ImplDX11_CreateWindow (ImGuiViewport *viewport)
       {
         // The maximum number of back buffer frames that will be queued for the swap chain. This value is 1 by default.
         // This method is only valid for use on swap chains created with DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT.
-        pSwapChain2->SetMaximumFrameLatency (1);
-
-        data->WaitHandle =
-          pSwapChain2->GetFrameLatencyWaitableObject ( );
-
-        if (data->WaitHandle)
+        if (SUCCEEDED (pSwapChain2->SetMaximumFrameLatency (1)))
         {
-          vSwapchainWaitHandles.push_back (data->WaitHandle);
+          data->WaitHandle =
+            pSwapChain2->GetFrameLatencyWaitableObject  ( );
 
-          // One-time wait to align the thread for minimum latency (reduces latency by half in testing)
-          WaitForSingleObjectEx (data->WaitHandle, INFINITE, true);
-          // Block this thread until the swap chain is finished presenting. Note that it is
-          // important to call this before the first Present in order to minimize the latency
-          // of the swap chain.
+          if (data->WaitHandle)
+          {
+            vSwapchainWaitHandles.push_back (data->WaitHandle);
+
+            // One-time wait to align the thread for minimum latency (reduces latency by half in testing)
+            //WaitForSingleObjectEx (data->WaitHandle, 1000, true);
+            WaitForSingleObject (data->WaitHandle, 1000);
+            // Block this thread until the swap chain is ready for presenting. Note that it is
+            // important to call this before the first Present in order to minimize the latency
+            // of the swap chain.
+          }
         }
       }
     }
+  }
+  else {
+    PLOG_WARNING << "Swapchain is a nullptr!";
   }
 }
 
@@ -1519,21 +1580,6 @@ ImGui_ImplDX11_SetWindowSize ( ImGuiViewport *viewport,
     {
       CComPtr <ID3D11Texture2D> pBackBuffer;
 
-#if 0
-      DXGI_FORMAT dxgi_format = DXGI_FORMAT_R8G8B8A8_UNORM;
-
-      if (SKIF_bCanHDR)
-      {
-        // scRGB
-        if (_registry.iHDRMode == 2)
-          dxgi_format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-
-        // HDR10
-        else
-          dxgi_format = DXGI_FORMAT_R10G10B10A2_UNORM;
-      }
-#endif
-
       DXGI_SWAP_CHAIN_DESC1       swap_desc = { };
       data->SwapChain->GetDesc1 (&swap_desc);
 
@@ -1541,7 +1587,7 @@ ImGui_ImplDX11_SetWindowSize ( ImGuiViewport *viewport,
         0, (UINT)size.x,
            (UINT)size.y,
             swap_desc.Format,
-              swap_desc.Flags
+            swap_desc.Flags
       );
 
       data->SwapChain->GetBuffer (
@@ -1569,6 +1615,13 @@ ImGui_ImplDX11_RenderWindow ( ImGuiViewport *viewport,
     static_cast <ImGuiViewportDataDx11 *> (
                       viewport->RendererUserData
     );
+  
+  if (data->SwapChain == nullptr ||
+      data->RTView    == nullptr  )
+  {
+    RecreateSwapChains = true;
+    return;
+  }
 
   ImVec4 clear_color =
     ImVec4 (0.0f, 0.0f, 0.0f, 1.0f);
@@ -1590,36 +1643,43 @@ static void
 ImGui_ImplDX11_SwapBuffers ( ImGuiViewport *viewport,
                                       void * )
 {
+  static SKIF_RegistrySettings& _registry = SKIF_RegistrySettings::GetInstance ( );
+
   ImGuiViewportDataDx11 *data =
     static_cast <ImGuiViewportDataDx11 *> (
                       viewport->RendererUserData
     );
 
-  UINT Interval = 1; // BitBlt Mode
-
-  if (SKIF_bCanFlip && SKIF_Util_IsWindows10OrGreater ( ))
-    Interval    = 2; // Flip VRR Compatibility Mode (only relevant on Windows 10+)
-
-  if (_registry.bDisableVSYNC)
-    Interval    = 1; // Normal Mode (V-Sync ON)
-
-  UINT PresentFlags = 0x0;
-
-  if (SKIF_bCanFlip)
-  {
-    PresentFlags   = DXGI_PRESENT_RESTART;
-
-    if (Interval == 0 && SKIF_bCanAllowTearing)
-      PresentFlags |= DXGI_PRESENT_ALLOW_TEARING;
-  }
-
   if (data->SwapChain != nullptr)
   {
+    DXGI_SWAP_CHAIN_DESC1       swap_desc = { };
+    data->SwapChain->GetDesc1 (&swap_desc);
+
+    UINT Interval = 1; // Default to V-Sync ON (will only be relevant on Win7 and Win8.1 with default settings)
+
+    if (SKIF_bCanFlip && SKIF_Util_IsWindows10OrGreater ( ))
+      Interval    = 2; // Flip VRR Compatibility Mode (only relevant on Windows 10+)
+
+    if (_registry.iUIMode == 0 || //   Safe Mode (BitBlt)
+        _registry.iUIMode == 1  ) // Normal Mode
+      Interval    = 1; // V-Sync ON
+
+    UINT PresentFlags = 0x0;
+
+    if (swap_desc.SwapEffect == DXGI_SWAP_EFFECT_FLIP_DISCARD   ||
+        swap_desc.SwapEffect == DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL )
+    {
+      PresentFlags   = DXGI_PRESENT_RESTART;
+
+      if (Interval == 0 && SKIF_bCanAllowTearing)
+        PresentFlags |= DXGI_PRESENT_ALLOW_TEARING;
+    }
+
     //if (data->WaitHandle)
     //  WaitForSingleObject (data->WaitHandle, INFINITE);
 
-    data->SwapChain->Present ( Interval, PresentFlags );
-    data->PresentCount++;
+    if (SUCCEEDED (data->SwapChain->Present (Interval, PresentFlags)))
+      data->PresentCount++;
 
     /* 2023-04-30: Does not actually seem to make a difference? We don't use dirty rectangles of Present1() at all
     if (data->WaitHandle)
@@ -1636,9 +1696,6 @@ ImGui_ImplDX11_SwapBuffers ( ImGuiViewport *viewport,
       data->PresentCount++;
     }
     */
-  }
-  else {
-    PLOG_WARNING << "Swapchain is a nullptr!";
   }
 }
 
